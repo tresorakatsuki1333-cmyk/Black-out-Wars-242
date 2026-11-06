@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BLACK-OUT WARS - Congo 242</title>
+    
+    <!-- External Libraries CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Poppins:wght@400;600;800&display=swap');
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            background-color: #080c14;
+        }
+
+        .font-teko {
+            font-family: 'Teko', sans-serif;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            outline: none;
+            display: block;
+        }
+
+        .title-glow {
+            text-shadow: 0 0 15px rgba(234, 179, 8, 0.8), 0 0 25px rgba(220, 38, 38, 0.7);
+        }
+
+        .hud-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Mobile Joystick styling */
+        .joystick-base {
+            width: 110px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            touch-action: none;
+            backdrop-filter: blur(6px);
+        }
+
+        .joystick-thumb {
+            width: 45px;
+            height: 45px;
+            background: rgba(234, 179, 8, 0.9);
+            border-radius: 50%;
+            position: absolute;
+            top: 32.5px;
+            left: 32.5px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.6);
+            touch-action: none;
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <!-- WebGL Canvas Babylon.js -->
+    <canvas id="renderCanvas"></canvas>
+
+    <!-- UI - MENU PRINCIPAL -->
+    <div id="mainMenu" class="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col justify-between p-6 transition-all duration-300">
+        <!-- Top Info Header -->
+        <div class="flex justify-between items-center max-w-4xl mx-auto w-full">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🇨🇬</span>
+                <span class="text-xs md:text-sm font-bold text-yellow-400 tracking-wider uppercase">SECTEUR SNE CONGO</span>
+            </div>
+            <div class="bg-slate-900 border border-yellow-500/40 px-4 py-1.5 rounded-full flex items-center space-x-2 text-xs md:text-sm">
+                <i class="fa-solid fa-coins text-yellow-400"></i>
+                <span id="coinsCount" class="font-bold text-white">500 FCFA</span>
+            </div>
+        </div>
+
+        <!-- Center Title & Character Profile -->
+        <div class="text-center my-auto max-w-2xl mx-auto space-y-4">
+            <div>
+                <h1 class="text-6xl md:text-8xl font-black italic tracking-wider text-yellow-400 font-teko uppercase title-glow leading-none">
+                    BLACK-OUT <span class="text-red-500">WARS</span>
+                </h1>
+                <p class="text-sm md:text-lg text-emerald-400 font-medium tracking-wide mt-1">
+                    Société Nationale d'Électricité - Édition Brazzaville
+                </p>
+            </div>
+
+            <!-- Profile Card Adoukus -->
+            <div class="bg-slate-900/90 border border-yellow-500/30 rounded-2xl p-4 text-left flex items-center space-x-4 shadow-xl">
+                <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-full flex items-center justify-center text-slate-950 text-3xl font-black shadow-lg">
+                    <i class="fa-solid fa-user-ninja"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-yellow-400 uppercase tracking-wider">AGENT JOUEUR PRINCIPAL</span>
+                        <span class="text-[10px] bg-red-600/80 text-white font-bold px-2 py-0.5 rounded">RANG MAX</span>
+                    </div>
+                    <div class="text-xl font-extrabold text-white">ADOUKUS</div>
+                    <div class="text-xs text-slate-400 italic">"Le Seigneur des Ténèbres"</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Menu -->
+        <div class="w-full max-w-md mx-auto space-y-3 mb-4">
+            <button onclick="startGame()" class="w-full py-4 rounded-xl text-slate-950 font-black text-xl bg-gradient-to-r from-yellow-400 via-amber-500 to-red-500 hover:brightness-110 shadow-lg tracking-wider flex items-center justify-center space-x-3 transition transform active:scale-95">
+                <i class="fa-solid fa-play text-2xl"></i>
+                <span>COMMENCER L'OPÉRATION</span>
+            </button>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="toggleCityMenu()" class="py-3 px-4 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-white font-semibold text-sm flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-map-location-dot text-yellow-400"></i>
+                    <span id="selectedCityBtn">Brazzaville</span>
+                </button>
+                <button onclick="toggleSettings()" class="py-3 px-4 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-white font-semibold text-sm flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-sliders text-emerald-400"></i>
+                    <span>Commandes</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center text-xs text-slate-500">
+            Black-out Wars V0.1 • Développé avec Babylon.js
+        </div>
+    </div>
+
+    <!-- UI - SELECTION VILLE -->
+    <div id="cityMenu" class="hidden absolute inset-0 z-50 bg-slate-950/95 p-6 flex flex-col justify-between backdrop-blur-lg">
+        <div class="flex justify-between items-center max-w-4xl mx-auto w-full">
+            <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                <i class="fa-solid fa-city text-yellow-400"></i>
+                <span>SÉLECTION DU SECTEUR</span>
+            </h2>
+            <button onclick="toggleCityMenu()" class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full my-auto">
+            <!-- BRAZZAVILLE -->
+            <div onclick="selectCity('Brazzaville')" class="bg-slate-900 border-2 border-emerald-500 rounded-2xl p-5 cursor-pointer hover:border-yellow-400 transition relative">
+                <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full">ACCESSIBLE</span>
+                <h3 class="text-2xl font-bold text-white mt-3">BRAZZAVILLE</h3>
+                <p class="text-xs text-slate-400 mt-1">Quartier : Poto-Poto & Bacongo</p>
+                <div class="mt-4 text-xs text-slate-300 space-y-1">
+                    <div>• Transformateurs haute tension SNE</div>
+                    <div>• Population réactive et rapide</div>
+                </div>
+            </div>
+
+            <!-- POINTE-NOIRE -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 opacity-65 relative">
+                <span class="bg-red-500/20 text-red-400 text-xs font-bold px-3 py-1 rounded-full">VERROUILLÉ</span>
+                <h3 class="text-2xl font-bold text-white mt-3">POINTE-NOIRE</h3>
+                <p class="text-xs text-slate-400 mt-1">Quartier : Tié-Tié & Côte Sauvage</p>
+                <p class="text-xs text-slate-500 mt-4">Débloquez d'abord le niveau 5 à Brazzaville.</p>
+            </div>
+        </div>
+        <div></div>
+    </div>
+
+    <!-- UI - PARAMETRES -->
+    <div id="settingsMenu" class="hidden absolute inset-0 z-50 bg-slate-950/95 p-6 flex flex-col justify-between backdrop-blur-lg">
+        <div class="flex justify-between items-center max-w-xl mx-auto w-full">
+            <h2 class="text-2xl font-bold text-white">COMMANDES & RÈGLES</h2>
+            <button onclick="toggleSettings()" class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="max-w-xl mx-auto w-full my-auto space-y-4 text-slate-300">
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                <h3 class="font-bold text-yellow-400 mb-2">Clavier PC</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><b class="text-white">Z Q S D / WASD :</b> Déplacement</div>
+                    <div><b class="text-white">SHIFT :</b> Courir</div>
+                    <div><b class="text-white">E :</b> Couper le courant</div>
+                    <div><b class="text-white">C :</b> Se cacher (Échoppes)</div>
+                </div>
+            </div>
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-xs">
+                <h3 class="font-bold text-yellow-400 mb-1">Mobile Tactile</h3>
+                <p>Joystick virtuel à gauche pour avancer. Boutons à droite pour courir, couper le courant et se cacher.</p>
+            </div>
+        </div>
+        <div></div>
+    </div>
+
+    <!-- UI - HUD IN-GAME -->
+    <div id="gameHUD" class="hidden absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-4">
+        <!-- Top Bar HUD -->
+        <div class="flex justify-between items-start w-full">
+            <!-- Objective Box -->
+            <div class="hud-panel p-3 rounded-2xl max-w-xs pointer-events-auto">
+                <div class="text-[10px] font-bold text-yellow-400 uppercase tracking-wide flex items-center space-x-1.5">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>MISSION POTO-POTO</span>
+                </div>
+                <div id="hudObjective" class="text-xs font-semibold text-white mt-1">
+                    Trouver le transformateur SNE
+                </div>
+                <div class="text-[10px] text-slate-400 mt-1">
+                    Agent : <span class="text-yellow-400 font-bold">Adoukus</span>
+                </div>
+            </div>
+
+            <!-- Heat Bar -->
+            <div class="hud-panel p-3 rounded-2xl pointer-events-auto flex flex-col items-end">
+                <div class="text-[10px] font-bold text-red-400 tracking-wider flex items-center space-x-1">
+                    <i class="fa-solid fa-fire text-red-500"></i>
+                    <span>COLÈRE POPULATION</span>
+                </div>
+                <div class="w-32 md:w-44 h-3 bg-slate-800 rounded-full mt-1.5 overflow-hidden border border-slate-700">
+                    <div id="heatBar" class="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompts central -->
+        <div class="mx-auto text-center pointer-events-none">
+            <div id="actionPrompt" class="hidden bg-yellow-500 text-slate-950 font-extrabold px-5 py-2 rounded-full shadow-lg border-2 border-white animate-bounce text-xs pointer-events-auto">
+                Maintenir [E] ou Touche Action pour le BLACK-OUT !
+            </div>
+            <div id="hidingPrompt" class="hidden bg-emerald-600 text-white font-bold px-4 py-1.5 rounded-full text-xs shadow-md border border-emerald-300">
+                <i class="fa-solid fa-user-ninja mr-1"></i> ADOUKUS EST CACHÉ DANS L'ÉCHOPPE
+            </div>
+        </div>
+
+        <!-- Bottom Bar HUD -->
+        <div class="flex justify-between items-end w-full">
+            <!-- Stamina Bar -->
+            <div class="hud-panel p-3 rounded-2xl pointer-events-auto w-40">
+                <div class="flex justify-between items-center text-[10px] text-slate-300 mb-1">
+                    <span class="font-bold text-emerald-400">ENDURANCE</span>
+                    <span id="staminaVal">100%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="staminaBar" class="h-full bg-emerald-500 w-full"></div>
+                </div>
+            </div>
+
+            <!-- Controls Touch Mobile -->
+            <div id="mobileControls" class="pointer-events-auto md:hidden relative w-full h-36">
+                <!-- Joystick -->
+                <div id="joystickBase" class="joystick-base">
+                    <div id="joystickThumb" class="joystick-thumb"></div>
+                </div>
+
+                <!-- Right Action Buttons -->
+                <div class="absolute bottom-2 right-2 flex flex-col space-y-2">
+                    <button id="btnSprint" class="w-12 h-12 rounded-full bg-amber-500/90 border-2 border-yellow-300 text-slate-950 text-lg font-bold flex items-center justify-center shadow-lg active:scale-95">
+                        <i class="fa-solid fa-person-running"></i>
+                    </button>
+                    <div class="flex space-x-2">
+                        <button id="btnHide" class="w-11 h-11 rounded-full bg-emerald-600/90 border-2 border-emerald-300 text-white text-base font-bold flex items-center justify-center shadow-lg active:scale-95">
+                            <i class="fa-solid fa-user-ninja"></i>
+                        </button>
+                        <button id="btnInteract" class="w-11 h-11 rounded-full bg-red-600/90 border-2 border-red-300 text-white text-base font-bold flex items-center justify-center shadow-lg active:scale-95">
+                            <i class="fa-solid fa-bolt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI - VICTOIRE -->
+    <div id="victoryScreen" class="hidden absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6">
+        <div class="bg-slate-900 border-2 border-emerald-500 rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full mx-auto flex items-center justify-center text-3xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2 class="text-3xl font-black text-emerald-400 font-teko uppercase tracking-wider">MISSION RÉUSSIE !</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Adoukus ("Le Seigneur des Ténèbres") a rejoint l'Agence SNE sous la protection de la police ! Les habitants grondent dehors mais la mission est validée.
+            </p>
+            <div class="bg-slate-950 p-3 rounded-xl flex justify-around text-xs">
+                <span class="text-slate-400">Prime Intervention :</span>
+                <span class="text-yellow-400 font-bold">+200 FCFA</span>
+            </div>
+            <button onclick="returnToMainMenu()" class="w-full py-3 bg-gradient-to-r from-yellow-500 to-emerald-600 text-slate-950 font-black rounded-xl text-base shadow-lg">CONTINUER</button>
+        </div>
+    </div>
+
+    <!-- UI - DÉFAITE -->
+    <div id="defeatScreen" class="hidden absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6">
+        <div class="bg-slate-900 border-2 border-red-600 rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <div class="w-16 h-16 bg-red-500/20 text-red-500 rounded-full mx-auto flex items-center justify-center text-3xl">
+                <i class="fa-solid fa-people-group"></i>
+            </div>
+            <h2 class="text-3xl font-black text-red-500 font-teko uppercase tracking-wider">RATTRAPÉ PAR LE QUARTIER !</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                "Ah mon frère ! Tu vas rallumer le courant là tout de suite !" Les habitants de Poto-Poto vous ont encerclé avant l'agence SNE.
+            </p>
+            <button onclick="startGame()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-extrabold rounded-xl text-base shadow-lg">RÉESSAYER</button>
+            <button onclick="returnToMainMenu()" class="w-full py-2 bg-slate-800 text-slate-400 font-semibold rounded-xl text-xs">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <!-- CODE BABYLON.JS JEU 3D -->
+    <script>
+        // Game State Variables
+        let canvas, engine, scene, camera;
+        let playerMesh, playerBody, agentMat;
+        let npcs = [];
+        let transformNode, sunLight, hemiLight;
+        let lightBulbs = [];
+        let currentCity = 'Brazzaville';
+        let isGameRunning = false;
+        let isPowerCut = false;
+        let isHiding = false;
+        let missionStage = 0; // 0: Ir au transformateur, 1: Fuir vers l'agence SNE
+        let heatLevel = 0;
+        let stamina = 100;
+        let coins = 500;
+
+        // Key states
+        const keys = {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false,
+            sprint: false,
+            mobileSprint: false,
+            interact: false,
+            hide: false
+        };
+
+        // Mobile joystick states
+        let touchMoveVector = { x: 0, z: 0 };
+        let joystickActive = false;
+
+        // Target coordinates
+        const OBJECTIVES = {
+            powerStation: new BABYLON.Vector3(12, 1, 10),
+            sneAgency: new BABYLON.Vector3(-30, 1, 45)
+        };
+
+        let hidingZones = [];
+
+        // Materials
+        let matYellow, matGreen, matRed, matRoad, matBuilding, matPolice;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('renderCanvas');
+            engine = new BABYLON.Engine(canvas, true);
+
+            createGameScene();
+
+            engine.runRenderLoop(() => {
+                if (scene) {
+                    if (isGameRunning) {
+                        updateGameLogic();
+                    }
+                    scene.render();
+                }
+            });
+
+            window.addEventListener('resize', () => engine.resize());
+            setupInputs();
+        });
+
+        // -------------------------------------------------------------
+        // 1. SCÈNE BABYLON.JS ET ENVIRONNEMENT URBAIN (POTO-POTO)
+        // -------------------------------------------------------------
+        function createGameScene() {
+            scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color4(0.08, 0.12, 0.2, 1.0);
+
+            // Lights
+            sunLight = new BABYLON.DirectionalLight("sunLight", new BABYLON.Vector3(-0.5, -1, -0.5), scene);
+            sunLight.intensity = 1.0;
+            sunLight.position = new BABYLON.Vector3(20, 40, 20);
+
+            hemiLight = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+            hemiLight.intensity = 0.5;
+
+            // Camera ArcRotate
+            camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 1.5, Math.PI / 3, 16, new BABYLON.Vector3(0, 1.5, 0), scene);
+            camera.lowerRadiusLimit = 8;
+            camera.upperRadiusLimit = 22;
+            camera.lowerBetaLimit = 0.2;
+            camera.upperBetaLimit = Math.PI / 2.2;
+            camera.attachControl(canvas, true);
+
+            initMaterials();
+            buildPotoPotoCity();
+            createAdoukusPlayer();
+            createTransformerStation();
+            createSNEAgency();
+            spawnHabitants(6);
+
+            camera.target = playerMesh;
+        }
+
+        function initMaterials() {
+            matYellow = new BABYLON.StandardMaterial("matYellow", scene);
+            matYellow.diffuseColor = new BABYLON.Color3(0.95, 0.75, 0.1);
+
+            matGreen = new BABYLON.StandardMaterial("matGreen", scene);
+            matGreen.diffuseColor = new BABYLON.Color3(0.1, 0.65, 0.3);
+
+            matRed = new BABYLON.StandardMaterial("matRed", scene);
+            matRed.diffuseColor = new BABYLON.Color3(0.85, 0.15, 0.15);
+
+            matRoad = new BABYLON.StandardMaterial("matRoad", scene);
+            matRoad.diffuseColor = new BABYLON.Color3(0.18, 0.2, 0.22);
+
+            matBuilding = new BABYLON.StandardMaterial("matBuilding", scene);
+            matBuilding.diffuseColor = new BABYLON.Color3(0.8, 0.5, 0.3);
+
+            matPolice = new BABYLON.StandardMaterial("matPolice", scene);
+            matPolice.diffuseColor = new BABYLON.Color3(0.1, 0.2, 0.5);
+        }
+
+        function buildPotoPotoCity() {
+            // Sol principal
+            const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 120, height: 120 }, scene);
+            ground.material = matRoad;
+
+            // Trottoirs / Îlots
+            const blocks = [
+                { x: -20, z: -10, w: 30, d: 40 },
+                { x: 20, z: -10, w: 30, d: 40 },
+                { x: -20, z: 30, w: 30, d: 30 },
+                { x: 20, z: 30, w: 30, d: 30 }
+            ];
+
+            const matSidewalk = new BABYLON.StandardMaterial("matSidewalk", scene);
+            matSidewalk.diffuseColor = new BABYLON.Color3(0.5, 0.48, 0.45);
+
+            blocks.forEach((b, i) => {
+                const sidewalk = BABYLON.MeshBuilder.CreateBox(`sidewalk_${i}`, { width: b.w, height: 0.3, depth: b.d }, scene);
+                sidewalk.position = new BABYLON.Vector3(b.x, 0.15, b.z);
+                sidewalk.material = matSidewalk;
+
+                // Bâtiments
+                for (let j = 0; j < 2; j++) {
+                    const bldg = BABYLON.MeshBuilder.CreateBox("bldg", { width: 8, height: 6, depth: 8 }, scene);
+                    bldg.position = new BABYLON.Vector3(b.x + (j * 10 - 5), 3.15, b.z);
+                    const m = new BABYLON.StandardMaterial("m", scene);
+                    m.diffuseColor = new BABYLON.Color3(0.4 + Math.random()*0.4, 0.3 + Math.random()*0.3, 0.2);
+                    bldg.material = m;
+                }
+            });
+
+            // Poteaux électriques avec lumière
+            for (let z = -40; z <= 40; z += 20) {
+                createElectricPole(-5, z);
+                createElectricPole(5, z);
+            }
+
+            // Taxis Congolais Vert & Jaune
+            createTaxi(-10, 0.4, -5, 0);
+            createTaxi(8, 0.4, 15, Math.PI / 2);
+
+            // Échoppes / Cachettes
+            createHidingSpot(-12, 1, 15, "Échoppe Marché", 4, 2, 3, matGreen);
+            createHidingSpot(15, 1, -20, "Conteneur Jaune", 4, 2, 2, matYellow);
+        }
+
+        function createElectricPole(x, z) {
+            const pole = BABYLON.MeshBuilder.CreateCylinder("pole", { height: 7, diameter: 0.2 }, scene);
+            pole.position = new BABYLON.Vector3(x, 3.5, z);
+            
+            const bulb = BABYLON.MeshBuilder.CreateSphere("bulb", { diameter: 0.5 }, scene);
+            bulb.position = new BABYLON.Vector3(x, 6.8, z);
+            const bMat = new BABYLON.StandardMaterial("bMat", scene);
+            bMat.emissiveColor = new BABYLON.Color3(1, 0.9, 0.4);
+            bulb.material = bMat;
+
+            lightBulbs.push(bMat);
+        }
+
+        function createTaxi(x, y, z, rotY) {
+            const root = new BABYLON.TransformNode("taxi", scene);
+            root.position = new BABYLON.Vector3(x, y, z);
+            root.rotation.y = rotY;
+
+            const bottom = BABYLON.MeshBuilder.CreateBox("bot", { width: 2, height: 0.6, depth: 4 }, scene);
+            bottom.position.y = 0.3;
+            bottom.parent = root;
+            bottom.material = matGreen;
+
+            const top = BABYLON.MeshBuilder.CreateBox("top", { width: 1.8, height: 0.6, depth: 2 }, scene);
+            top.position.y = 0.9;
+            top.position.z = -0.2;
+            top.parent = root;
+            top.material = matYellow;
+        }
+
+        function createHidingSpot(x, y, z, name, w, h, d, mat) {
+            const box = BABYLON.MeshBuilder.CreateBox(name, { width: w, height: h, depth: d }, scene);
+            box.position = new BABYLON.Vector3(x, y, z);
+            box.material = mat;
+
+            hidingZones.push({
+                position: box.position,
+                radius: Math.max(w, d) + 1.0
+            });
+        }
+
+        // -------------------------------------------------------------
+        // 2. PERSONNAGE PRINCIPAL : ADOUKUS (Le Seigneur des ténèbres)
+        // -------------------------------------------------------------
+        function createAdoukusPlayer() {
+            playerMesh = new BABYLON.TransformNode("adoukusRoot", scene);
+            playerMesh.position = new BABYLON.Vector3(0, 1, -35);
+
+            // Corps / Combinaison bleue SNE
+            playerBody = BABYLON.MeshBuilder.CreateCapsule("adoukusBody", { radius: 0.45, height: 1.8 }, scene);
+            playerBody.position.y = 0.9;
+            playerBody.parent = playerMesh;
+            
+            agentMat = new BABYLON.StandardMaterial("agentMat", scene);
+            agentMat.diffuseColor = new BABYLON.Color3(0.05, 0.25, 0.65); // Uniforme Bleu SNE
+            playerBody.material = agentMat;
+
+            // Gilet Fluo SNE
+            const vest = BABYLON.MeshBuilder.CreateCylinder("vest", { height: 0.75, diameter: 0.92 }, scene);
+            vest.position.y = 0.9;
+            vest.parent = playerMesh;
+            vest.material = matYellow;
+
+            // Casque Jaune SNE
+            const helmet = BABYLON.MeshBuilder.CreateSphere("helmet", { diameter: 0.65 }, scene);
+            helmet.position.y = 1.7;
+            helmet.parent = playerMesh;
+            helmet.material = matYellow;
+
+            // Sac à outils dorsal
+            const backpack = BABYLON.MeshBuilder.CreateBox("bag", { width: 0.45, height: 0.4, depth: 0.25 }, scene);
+            backpack.position = new BABYLON.Vector3(0, 1.0, -0.38);
+            backpack.parent = playerMesh;
+            const bMat = new BABYLON.StandardMaterial("bMat", scene);
+            bMat.diffuseColor = new BABYLON.Color3(0.2, 0.15, 0.1);
+            backpack.material = bMat;
+        }
+
+        // -------------------------------------------------------------
+        // 3. OBJECTIFS : TRANSFORMATEUR ET AGENCE SNE
+        // -------------------------------------------------------------
+        function createTransformerStation() {
+            transformNode = new BABYLON.TransformNode("transfoRoot", scene);
+            transformNode.position = OBJECTIVES.powerStation.clone();
+
+            const box = BABYLON.MeshBuilder.CreateBox("transfoBox", { width: 3, height: 2.8, depth: 2 }, scene);
+            box.position.y = 1.4;
+            box.parent = transformNode;
+            
+            const matTrans = new BABYLON.StandardMaterial("matTrans", scene);
+            matTrans.diffuseColor = new BABYLON.Color3(0.3, 0.35, 0.45);
+            box.material = matTrans;
+
+            // Aura d'interaction jaune
+            const aura = BABYLON.MeshBuilder.CreateDisc("aura", { radius: 3 }, scene);
+            aura.position = new BABYLON.Vector3(0, 0.05, 0);
+            aura.rotation.x = Math.PI / 2;
+            aura.parent = transformNode;
+            const aMat = new BABYLON.StandardMaterial("aMat", scene);
+            aMat.emissiveColor = new BABYLON.Color3(1, 0.8, 0);
+            aMat.alpha = 0.4;
+            aura.material = aMat;
+        }
+
+        function createSNEAgency() {
+            const sneRoot = new BABYLON.TransformNode("sneAgencyRoot", scene);
+            sneRoot.position = OBJECTIVES.sneAgency.clone();
+
+            // Bâtiment
+            const bldg = BABYLON.MeshBuilder.CreateBox("sneBldg", { width: 12, height: 6, depth: 10 }, scene);
+            bldg.position.y = 3;
+            bldg.parent = sneRoot;
+            bldg.material = matGreen;
+
+            // Enseigne
+            const sign = BABYLON.MeshBuilder.CreateBox("sneSign", { width: 8, height: 1.2, depth: 0.3 }, scene);
+            sign.position = new BABYLON.Vector3(0, 5.2, -5.1);
+            sign.parent = sneRoot;
+            sign.material = matYellow;
+
+            // Zone sécurisée verte
+            const safeDisc = BABYLON.MeshBuilder.CreateDisc("safeDisc", { radius: 5 }, scene);
+            safeDisc.position = new BABYLON.Vector3(0, 0.05, -7);
+            safeDisc.rotation.x = Math.PI / 2;
+            safeDisc.parent = sneRoot;
+            const sMat = new BABYLON.StandardMaterial("sMat", scene);
+            sMat.emissiveColor = new BABYLON.Color3(0.1, 0.8, 0.3);
+            sMat.alpha = 0.4;
+            safeDisc.material = sMat;
+
+            // Gardes Policiers
+            createCop(sneRoot, -2.5, 0, -6.5);
+            createCop(sneRoot, 2.5, 0, -6.5);
+        }
+
+        function createCop(parent, x, y, z) {
+            const cop = BABYLON.MeshBuilder.CreateCapsule("cop", { radius: 0.4, height: 1.8 }, scene);
+            cop.position = new BABYLON.Vector3(x, y + 0.9, z);
+            cop.parent = parent;
+            cop.material = matPolice;
+        }
+
+        // -------------------------------------------------------------
+        // 4. HABITANTS ET PHOENIX IA (POURSUITE)
+        // -------------------------------------------------------------
+        function spawnHabitants(count) {
+            npcs = [];
+            for (let i = 0; i < count; i++) {
+                const npc = BABYLON.MeshBuilder.CreateCapsule(`npc_${i}`, { radius: 0.4, height: 1.7 }, scene);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 12 + Math.random() * 20;
+                npc.position = new BABYLON.Vector3(
+                    Math.cos(angle) * dist,
+                    0.85,
+                    Math.sin(angle) * dist
+                );
+
+                const nMat = new BABYLON.StandardMaterial(`nMat_${i}`, scene);
+                nMat.diffuseColor = new BABYLON.Color3(0.8 + Math.random()*0.2, 0.2, 0.2);
+                npc.material = nMat;
+
+                npcs.push({
+                    mesh: npc,
+                    speed: 0.075 + Math.random() * 0.02
+                });
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 5. UPDATE GAME LOGIC (RENDER LOOP)
+        // -------------------------------------------------------------
+        function updateGameLogic() {
+            let moveX = 0;
+            let moveZ = 0;
+
+            if (keys.forward) moveZ += 1;
+            if (keys.backward) moveZ -= 1;
+            if (keys.left) moveX -= 1;
+            if (keys.right) moveX += 1;
+
+            if (joystickActive) {
+                moveX = touchMoveVector.x;
+                moveZ = touchMoveVector.z;
+            }
+
+            // Speed & Stamina
+            let speed = 0.14;
+            const isSprinting = (keys.sprint || keys.mobileSprint) && stamina > 5;
+
+            if (isSprinting && (moveX !== 0 || moveZ !== 0)) {
+                speed = 0.25;
+                stamina = Math.max(0, stamina - 0.4);
+            } else {
+                stamina = Math.min(100, stamina + 0.2);
+            }
+            document.getElementById('staminaBar').style.width = `${stamina}%`;
+            document.getElementById('staminaVal').innerText = `${Math.round(stamina)}%`;
+
+            // Hiding Check
+            checkHiding();
+
+            // Player displacement
+            if ((moveX !== 0 || moveZ !== 0) && !isHiding) {
+                const angle = Math.atan2(moveX, moveZ) + camera.alpha - Math.PI / 2;
+                const dx = Math.sin(angle) * speed;
+                const dz = Math.cos(angle) * speed;
+
+                playerMesh.position.x += dx;
+                playerMesh.position.z += dz;
+                playerMesh.rotation.y = angle;
+            }
+
+            // Action : Cut Power Prompt
+            const distToPower = BABYLON.Vector3.Distance(playerMesh.position, OBJECTIVES.powerStation);
+            const promptUI = document.getElementById('actionPrompt');
+
+            if (missionStage === 0 && distToPower < 4.5) {
+                promptUI.classList.remove('hidden');
+                if (keys.interact) {
+                    triggerBlackout();
+                }
+            } else if (missionStage === 0) {
+                promptUI.classList.add('hidden');
+            }
+
+            // NPC Chase AI
+            if (isPowerCut) {
+                updateHabitantsAI();
+            }
+
+            // Victory condition (Arrived at SNE Agency)
+            const distToSNE = BABYLON.Vector3.Distance(playerMesh.position, OBJECTIVES.sneAgency);
+            if (missionStage === 1 && distToSNE < 6.0) {
+                triggerVictory();
+            }
+        }
+
+        function checkHiding() {
+            let inside = false;
+            if (keys.hide) {
+                for (let h of hidingZones) {
+                    if (BABYLON.Vector3.Distance(playerMesh.position, h.position) < h.radius) {
+                        inside = true;
+                        break;
+                    }
+                }
+            }
+
+            isHiding = inside;
+            const hPrompt = document.getElementById('hidingPrompt');
+            if (isHiding) {
+                hPrompt.classList.remove('hidden');
+                agentMat.diffuseColor = new BABYLON.Color3(0.02, 0.05, 0.1);
+            } else {
+                hPrompt.classList.add('hidden');
+                agentMat.diffuseColor = new BABYLON.Color3(0.05, 0.25, 0.65);
+            }
+        }
+
+        function triggerBlackout() {
+            isPowerCut = true;
+            missionStage = 1;
+            heatLevel = 100;
+
+            document.getElementById('actionPrompt').classList.add('hidden');
+            document.getElementById('hudObjective').innerText = "FUYEZ vers l'Agence SNE sécurisée !";
+            document.getElementById('heatBar').style.width = "100%";
+
+            // Darkness atmosphere
+            sunLight.intensity = 0.15;
+            hemiLight.intensity = 0.15;
+            lightBulbs.forEach(b => b.emissiveColor = new BABYLON.Color3(0.05, 0.05, 0.05));
+        }
+
+        function updateHabitantsAI() {
+            npcs.forEach(npc => {
+                const dist = BABYLON.Vector3.Distance(npc.mesh.position, playerMesh.position);
+
+                if (!isHiding && dist < 25) {
+                    const dir = playerMesh.position.subtract(npc.mesh.position).normalize();
+                    npc.mesh.position.x += dir.x * npc.speed;
+                    npc.mesh.position.z += dir.z * npc.speed;
+                    npc.mesh.rotation.y = Math.atan2(dir.x, dir.z);
+
+                    // Defeat collision
+                    if (dist < 1.3) {
+                        triggerDefeat();
+                    }
+                }
+            });
+        }
+
+        // -------------------------------------------------------------
+        // 6. MENUS ET RÉSULTATS
+        // -------------------------------------------------------------
+        function startGame() {
+            isGameRunning = true;
+            isPowerCut = false;
+            missionStage = 0;
+            heatLevel = 0;
+            stamina = 100;
+
+            // Reset positions
+            playerMesh.position = new BABYLON.Vector3(0, 1, -35);
+            sunLight.intensity = 1.0;
+            hemiLight.intensity = 0.5;
+            lightBulbs.forEach(b => b.emissiveColor = new BABYLON.Color3(1, 0.9, 0.4));
+            spawnHabitants(6);
+
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('cityMenu').classList.add('hidden');
+            document.getElementById('victoryScreen').classList.add('hidden');
+            document.getElementById('defeatScreen').classList.add('hidden');
+            document.getElementById('gameHUD').classList.remove('hidden');
+
+            document.getElementById('hudObjective').innerText = "Trouver le transformateur SNE à Poto-Poto";
+            document.getElementById('heatBar').style.width = "0%";
+        }
+
+        function triggerVictory() {
+            isGameRunning = false;
+            coins += 200;
+            document.getElementById('coinsCount').innerText = `${coins} FCFA`;
+            document.getElementById('gameHUD').classList.add('hidden');
+            document.getElementById('victoryScreen').classList.remove('hidden');
+        }
+
+        function triggerDefeat() {
+            isGameRunning = false;
+            document.getElementById('gameHUD').classList.add('hidden');
+            document.getElementById('defeatScreen').classList.remove('hidden');
+        }
+
+        function returnToMainMenu() {
+            isGameRunning = false;
+            document.getElementById('victoryScreen').classList.add('hidden');
+            document.getElementById('defeatScreen').classList.add('hidden');
+            document.getElementById('gameHUD').classList.add('hidden');
+            document.getElementById('mainMenu').classList.remove('hidden');
+        }
+
+        function toggleCityMenu() {
+            document.getElementById('cityMenu').classList.toggle('hidden');
+        }
+
+        function toggleSettings() {
+            document.getElementById('settingsMenu').classList.toggle('hidden');
+        }
+
+        function selectCity(city) {
+            currentCity = city;
+            document.getElementById('selectedCityBtn').innerText = city;
+            toggleCityMenu();
+        }
+
+        // -------------------------------------------------------------
+        // 7. INPUTS LISTENERS (KEYBOARD & TOUCH)
+        // -------------------------------------------------------------
+        function setupInputs() {
+            window.addEventListener('keydown', (e) => {
+                switch (e.code) {
+                    case 'KeyW': case 'ArrowUp': case 'KeyZ': keys.forward = true; break;
+                    case 'KeyS': case 'ArrowDown': keys.backward = true; break;
+                    case 'KeyA': case 'ArrowLeft': case 'KeyQ': keys.left = true; break;
+                    case 'KeyD': case 'ArrowRight': keys.right = true; break;
+                    case 'ShiftLeft': case 'ShiftRight': keys.sprint = true; break;
+                    case 'KeyE': keys.interact = true; break;
+                    case 'KeyC': keys.hide = true; break;
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                switch (e.code) {
+                    case 'KeyW': case 'ArrowUp': case 'KeyZ': keys.forward = false; break;
+                    case 'KeyS': case 'ArrowDown': keys.backward = false; break;
+                    case 'KeyA': case 'ArrowLeft': case 'KeyQ': keys.left = false; break;
+                    case 'KeyD': case 'ArrowRight': keys.right = false; break;
+                    case 'ShiftLeft': case 'ShiftRight': keys.sprint = false; break;
+                    case 'KeyE': keys.interact = false; break;
+                    case 'KeyC': keys.hide = false; break;
+                }
+            });
+
+            // Mobile Buttons
+            const bSprint = document.getElementById('btnSprint');
+            const bHide = document.getElementById('btnHide');
+            const bInteract = document.getElementById('btnInteract');
+
+            bSprint.addEventListener('touchstart', (e) => { e.preventDefault(); keys.mobileSprint = true; });
+            bSprint.addEventListener('touchend', (e) => { e.preventDefault(); keys.mobileSprint = false; });
+            
+            bHide.addEventListener('touchstart', (e) => { e.preventDefault(); keys.hide = true; });
+            bHide.addEventListener('touchend', (e) => { e.preventDefault(); keys.hide = false; });
+
+            bInteract.addEventListener('touchstart', (e) => { e.preventDefault(); keys.interact = true; });
+            bInteract.addEventListener('touchend', (e) => { e.preventDefault(); keys.interact = false; });
+
+            // Joystick Touch Logic
+            const jBase = document.getElementById('joystickBase');
+            const jThumb = document.getElementById('joystickThumb');
+
+            jBase.addEventListener('touchstart', (e) => { joystickActive = true; updateJoystick(e); }, false);
+            jBase.addEventListener('touchmove', (e) => { if (joystickActive) updateJoystick(e); }, false);
+            jBase.addEventListener('touchend', () => {
+                joystickActive = false;
+                touchMoveVector = { x: 0, z: 0 };
+                jThumb.style.transform = `translate(0px, 0px)`;
+            }, false);
+
+            function updateJoystick(e) {
+                const rect = jBase.getBoundingClientRect();
+                const touch = e.touches[0];
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+
+                let dx = touch.clientX - cx;
+                let dy = touch.clientY - cy;
+                const maxR = 35;
+
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > maxR) {
+                    dx = (dx / dist) * maxR;
+                    dy = (dy / dist) * maxR;
+                }
+
+                jThumb.style.transform = `translate(${dx}px, ${dy}px)`;
+                touchMoveVector.x = dx / maxR;
+                touchMoveVector.z = -(dy / maxR);
+            }
+        }
+    </script>
+</body>
+</html>
