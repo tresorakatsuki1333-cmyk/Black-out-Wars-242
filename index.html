@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>BLACK-OUT WARS - Congo 242</title>
+    <title>BLACK-OUT WARS 242 - Adoukus, Seigneur des ténèbres</title>
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
@@ -59,20 +59,20 @@
             <div class="max-w-md w-full text-center space-y-6">
                 <div class="relative inline-block">
                     <h1 class="text-4xl md:text-5xl font-extrabold tracking-wider text-yellow-400 drop-shadow-[0_5px_8px_rgba(0,0,0,0.9)]">
-                        BLACK-OUT WARS
+                        BLACK-OUT WARS 242
                     </h1>
                     <span class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded absolute -top-2 -right-6 rotate-12 uppercase">
                         Congo 242
                     </span>
                 </div>
                 <p class="text-slate-300 text-sm md:text-base italic">
-                    Plongez Brazzaville dans le noir et échappez aux habitants mécontents !
+                    Plongez Brazzaville dans le noir et échappez aux habitants en colère !
                 </p>
 
                 <!-- Carte du Personnage -->
                 <div class="bg-slate-900/90 border border-yellow-500/40 rounded-2xl p-4 text-left flex items-center space-x-4 shadow-xl">
                     <div class="w-16 h-16 bg-yellow-500/20 border-2 border-yellow-400 rounded-full flex items-center justify-center text-yellow-400 text-3xl font-bold">
-                        <i class="fa-solid fa-user-gear"></i>
+                        <i class="fa-solid fa-bolt"></i>
                     </div>
                     <div>
                         <div class="text-xs text-yellow-400 uppercase font-bold tracking-wider">Agent SNE Principal</div>
@@ -84,11 +84,11 @@
                 <div class="space-y-3 pt-2">
                     <button id="btnStartGame" class="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black text-lg rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center space-x-2">
                         <i class="fa-solid fa-play"></i>
-                        <span>LANCER L'OPÉRATION</span>
+                        <span>COMMENCER L'OPÉRATION</span>
                     </button>
                     <button id="btnSoundToggle" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 transition-all flex items-center justify-center space-x-2">
                         <i id="soundIcon" class="fa-solid fa-volume-high text-yellow-400"></i>
-                        <span id="soundLabel">MUSIQUE CONGOLAISE : ACTIVÉE</span>
+                        <span id="soundLabel">SONS & MUSIQUE : ACTIVÉS</span>
                     </button>
                 </div>
             </div>
@@ -128,7 +128,7 @@
             </div>
 
             <div id="alertBanner" class="hidden pointer-events-none bg-red-600/90 text-white font-black px-6 py-2 rounded-xl text-lg uppercase tracking-wider animate-pulse border border-red-400 shadow-2xl">
-                ⚠️ FUYEZ ! LES HABITANTS CHERCHENT ADOUKUS !
+                ⚠️ OKOKIMA TE ! FUYEZ VERS L'AGENCE SNE !
             </div>
         </div>
 
@@ -141,7 +141,7 @@
             <div class="hidden md:flex hud-glass p-3 rounded-xl text-xs space-x-4 text-slate-200">
                 <div><span class="bg-slate-700 px-2 py-0.5 rounded text-yellow-400 font-bold">↑ ↓ ← → / ZQSD</span> Déplacer</div>
                 <div><span class="bg-slate-700 px-2 py-0.5 rounded text-yellow-400 font-bold">SHIFT</span> Courir</div>
-                <div><span class="bg-slate-700 px-2 py-0.5 rounded text-yellow-400 font-bold">E</span> Couper courant</div>
+                <div><span class="bg-slate-700 px-2 py-0.5 rounded text-yellow-400 font-bold">E</span> Couper le courant</div>
             </div>
 
             <div class="pointer-events-auto flex space-x-3 md:hidden">
@@ -183,32 +183,78 @@
 
             const inputMap = { forward: false, backward: false, left: false, right: false, run: false, interact: false };
 
-            // SYNTHÉTISEUR AUDIO CONGOLAIS
+            // SYNTHÉTISEUR AUDIO COMPLET : MUSIQUE + SFX
             let audioCtx = null;
-            function startCongoMusic() {
+
+            function initAudio() {
                 if (audioCtx) return;
                 try {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    let step = 0;
-                    const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
-                    setInterval(() => {
-                        if (!gameState.soundEnabled) return;
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
-                        osc.type = step % 4 === 0 ? "triangle" : "sine";
-                        let noteIndex = (step * 2) % notes.length;
-                        if (gameState.powerCut) noteIndex = (step * 3) % notes.length;
-                        osc.frequency.setValueAtTime(notes[noteIndex], audioCtx.currentTime);
-                        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-                        osc.connect(gain); gain.connect(audioCtx.destination);
-                        osc.start(); osc.stop(audioCtx.currentTime + 0.22);
-                        step++;
-                    }, 180);
+                    startMusicLoop();
                 } catch(e) {}
             }
 
-            // CRÉATION DE LA SCÈNE 3D
+            function startMusicLoop() {
+                let step = 0;
+                const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+                setInterval(() => {
+                    if (!gameState.soundEnabled || !gameState.active) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = step % 4 === 0 ? "triangle" : "sine";
+                    let noteIndex = (step * 2) % notes.length;
+                    if (gameState.powerCut) noteIndex = (step * 3) % notes.length;
+                    osc.frequency.setValueAtTime(notes[noteIndex], audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.22);
+                    step++;
+                }, 180);
+            }
+
+            function playZapSound() {
+                if (!gameState.soundEnabled || !audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sawtooth";
+                osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }
+
+            function playAlarmSound() {
+                if (!gameState.soundEnabled || !audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "square";
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(900, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            }
+
+            let lastStepTime = 0;
+            function playStepSound() {
+                const now = Date.now();
+                if (!gameState.soundEnabled || !audioCtx || now - lastStepTime < 300) return;
+                lastStepTime = now;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            }
+
+            // SCÈNE 3D BABYLON.JS
             const createScene = function () {
                 const scene = new BABYLON.Scene(engine);
                 scene.clearColor = new BABYLON.Color3(0.06, 0.09, 0.16);
@@ -220,13 +266,12 @@
                 dirLight.position = new BABYLON.Vector3(20, 40, 20);
                 dirLight.intensity = 0.9;
 
-                // Sol Route
                 const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 120, height: 120 }, scene);
                 const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
                 groundMat.diffuseColor = new BABYLON.Color3(0.15, 0.15, 0.2);
                 ground.material = groundMat;
 
-                // PERSONNAGE ADOUKUS
+                // ADOUKUS
                 const player = new BABYLON.TransformNode("player", scene);
                 player.position = new BABYLON.Vector3(0, 0, -40);
 
@@ -234,28 +279,19 @@
                 const matSne = new BABYLON.StandardMaterial("matSne", scene); matSne.diffuseColor = new BABYLON.Color3(0.05, 0.35, 0.75);
                 const matHelmet = new BABYLON.StandardMaterial("matHelmet", scene); matHelmet.diffuseColor = new BABYLON.Color3(0.95, 0.8, 0.05);
 
-                const body = BABYLON.MeshBuilder.CreateCylinder("pBody", { height: 1.4, diameterTop: 0.65, diameterBottom: 0.5 }, scene);
+                const body = BABYLON.MeshBuilder.CreateCylinder("pBody", { height: 1.5, diameterTop: 0.5, diameterBottom: 0.4 }, scene);
                 body.position.y = 0.9; body.material = matSne; body.parent = player;
 
-                const head = BABYLON.MeshBuilder.CreateSphere("pHead", { diameter: 0.5 }, scene);
+                const head = BABYLON.MeshBuilder.CreateSphere("pHead", { diameter: 0.45 }, scene);
                 head.position.y = 1.8; head.material = matSkin; head.parent = player;
 
-                const nose = BABYLON.MeshBuilder.CreateBox("pNose", { width: 0.08, height: 0.1, depth: 0.12 }, scene);
-                nose.position = new BABYLON.Vector3(0, 1.8, 0.24); nose.material = matSkin; nose.parent = player;
+                const helmet = BABYLON.MeshBuilder.CreateSphere("pHelmet", { diameter: 0.5, slice: 0.5 }, scene);
+                helmet.position.y = 1.95; helmet.material = matHelmet; helmet.parent = player;
 
-                const helmet = BABYLON.MeshBuilder.CreateSphere("pHelmet", { diameter: 0.56, slice: 0.5 }, scene);
-                helmet.position.y = 1.94; helmet.material = matHelmet; helmet.parent = player;
-
-                const bag = BABYLON.MeshBuilder.CreateBox("pBag", { width: 0.45, height: 0.5, depth: 0.25 }, scene);
-                bag.position = new BABYLON.Vector3(0, 1.0, -0.32);
-                const matBag = new BABYLON.StandardMaterial("matBag", scene); matBag.diffuseColor = new BABYLON.Color3(0.35, 0.2, 0.1);
-                bag.material = matBag; bag.parent = player;
-
-                // CAMÉRA
                 const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -50), scene);
                 camera.lockedTarget = player; camera.radius = 9; camera.heightOffset = 4.5; camera.cameraAcceleration = 0.1;
 
-                // MONUMENTS : SAINTE-ANNE DE POTO-POTO
+                // BASILIQUE SAINTE-ANNE
                 const sainteAnneGroup = new BABYLON.TransformNode("sainteAnneGroup", scene);
                 sainteAnneGroup.position = new BABYLON.Vector3(-18, 0, 10);
 
@@ -270,21 +306,6 @@
                 matRoof.emissiveColor = new BABYLON.Color3(0.01, 0.15, 0.08);
                 churchRoof.material = matRoof; churchRoof.parent = sainteAnneGroup;
 
-                const spire = BABYLON.MeshBuilder.CreateCylinder("spire", { height: 10, diameterTop: 0.2, diameterBottom: 3, tessellation: 4 }, scene);
-                spire.position = new BABYLON.Vector3(0, 14, -6);
-                const matSpire = new BABYLON.StandardMaterial("matSpire", scene); matSpire.diffuseColor = new BABYLON.Color3(0.9, 0.75, 0.2);
-                spire.material = matSpire; spire.parent = sainteAnneGroup;
-
-                // BÂTIMENTS ET BOUTIQUES
-                for (let i = 0; i < 5; i++) {
-                    const b = BABYLON.MeshBuilder.CreateBox("bldg_" + i, { width: 7, height: 5, depth: 7 }, scene);
-                    b.position = new BABYLON.Vector3(18, 2.5, -30 + (i * 15));
-                    const matB = new BABYLON.StandardMaterial("matB_" + i, scene);
-                    matB.diffuseColor = new BABYLON.Color3(0.8, 0.3 + (i * 0.1), 0.2);
-                    matB.emissiveColor = new BABYLON.Color3(0.1, 0.05, 0.05);
-                    b.material = matB;
-                }
-
                 // TRANSFORMATEUR SNE
                 const transformer = BABYLON.MeshBuilder.CreateBox("transformer", { width: 3, height: 2.5, depth: 2 }, scene);
                 transformer.position = new BABYLON.Vector3(10, 1.25, 0);
@@ -296,7 +317,7 @@
                 const matAura = new BABYLON.StandardMaterial("matAura", scene); matAura.emissiveColor = new BABYLON.Color3(1, 0.8, 0); matAura.alpha = 0.4;
                 aura.material = matAura;
 
-                // AGENCE SNE (REFUGE)
+                // AGENCE SNE
                 const sneAgency = BABYLON.MeshBuilder.CreateBox("sneAgency", { width: 14, height: 7, depth: 10 }, scene);
                 sneAgency.position = new BABYLON.Vector3(0, 3.5, 45);
                 const matSneB = new BABYLON.StandardMaterial("sneB", scene); matSneB.diffuseColor = new BABYLON.Color3(0.1, 0.35, 0.85); sneAgency.material = matSneB;
@@ -308,7 +329,7 @@
                 // HABITANTS
                 const npcs = [];
                 const npcCoords = [new BABYLON.Vector3(-6, 0.8, -10), new BABYLON.Vector3(8, 0.8, 10), new BABYLON.Vector3(-5, 0.8, 20)];
-                const quotes = ["Wapi courant ?!", "Adoukus, ozo sala nini ?!", "Arrêtez-le !", "SNE encore ?!", "Nalembi te !"];
+                const quotes = ["Okokima te !", "Wapi courant ?!", "Adoukus, ozo sala nini ?!", "Arrêtez-le !", "Nalembi te !"];
 
                 npcCoords.forEach((pos, idx) => {
                     const npcMesh = BABYLON.MeshBuilder.CreateCylinder("npc_" + idx, { height: 1.5, diameter: 0.65 }, scene);
@@ -317,7 +338,7 @@
                     npcs.push({ mesh: npcMesh, speed: 0.07 + (idx * 0.01), lastQuote: 0 });
                 });
 
-                // RADAR MINI-MAP
+                // RADAR
                 const minimapCanvas = document.getElementById("minimapCanvas");
                 const ctx = minimapCanvas.getContext("2d");
 
@@ -331,30 +352,25 @@
                         y: center - (pos.z - player.position.z) * scale
                     });
 
-                    // Refuge SNE (Bleu)
                     const snePos = toRadar(safeZone.position);
                     ctx.fillStyle = "#3b82f6"; ctx.beginPath(); ctx.arc(snePos.x, snePos.y, 8, 0, Math.PI * 2); ctx.fill();
 
-                    // Transformateur (Jaune)
                     if (!gameState.powerCut) {
                         const transPos = toRadar(transformer.position);
                         ctx.fillStyle = "#eab308"; ctx.beginPath(); ctx.arc(transPos.x, transPos.y, 6, 0, Math.PI * 2); ctx.fill();
                     }
 
-                    // Habitants (Rouge)
                     ctx.fillStyle = "#ef4444";
                     npcs.forEach(npc => {
                         const nPos = toRadar(npc.mesh.position);
                         ctx.beginPath(); ctx.arc(nPos.x, nPos.y, 4, 0, Math.PI * 2); ctx.fill();
                     });
 
-                    // Joueur ADOUKUS (Vert)
                     ctx.fillStyle = "#22c55e";
                     ctx.beginPath(); ctx.arc(center, center, 5, 0, Math.PI * 2); ctx.fill();
                     ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5; ctx.stroke();
                 }
 
-                // BOUCLE GAMEPLAY
                 scene.registerBeforeRender(() => {
                     if (!gameState.active || gameState.completed) return;
 
@@ -370,26 +386,27 @@
                         moveVector.normalize();
                         player.moveWithCollisions(moveVector.scale(speed));
                         player.rotation.y = BABYLON.Scalar.LerpAngle(player.rotation.y, Math.atan2(moveVector.x, moveVector.z), 0.25);
+                        playStepSound();
                     }
 
                     player.position.x = Math.max(-25, Math.min(25, player.position.x));
                     player.position.z = Math.max(-50, Math.min(48, player.position.z));
 
-                    // Interaction
                     const distToTransfo = BABYLON.Vector3.Distance(player.position, transformer.position);
                     const actionPrompt = document.getElementById("actionPrompt");
                     if (distToTransfo < 4 && !gameState.powerCut) {
                         actionPrompt.classList.remove("hidden");
                         if (inputMap.interact) {
+                            playZapSound();
                             gameState.powerCut = true;
                             gameState.alertLevel = 100;
                             document.getElementById("alertBar").style.width = "100%";
                             document.getElementById("alertBanner").classList.remove("hidden");
                             hemiLight.intensity = 0.2;
+                            playAlarmSound();
                         }
                     } else actionPrompt.classList.add("hidden");
 
-                    // Poursuite
                     if (gameState.powerCut) {
                         const now = Date.now();
                         npcs.forEach((npc) => {
@@ -399,13 +416,13 @@
                                 npc.mesh.rotation.y = Math.atan2(dir.x, dir.z);
                                 if (now - npc.lastQuote > 3500 && Math.random() < 0.3) {
                                     showSpeechBubble(npc.mesh, quotes[Math.floor(Math.random() * quotes.length)], scene, camera);
+                                    playAlarmSound();
                                     npc.lastQuote = now;
                                 }
                             } else triggerEndGame(false);
                         });
                     }
 
-                    // Victoire
                     if (BABYLON.Vector3.Distance(player.position, safeZone.position) < 4 && gameState.powerCut) {
                         triggerEndGame(true);
                     }
@@ -429,9 +446,8 @@
 
             const scene = createScene();
 
-            // CLAVIER
             window.addEventListener("keydown", (e) => {
-                startCongoMusic();
+                initAudio();
                 switch (e.code) {
                     case "ArrowUp": case "KeyW": case "KeyZ": inputMap.forward = true; break;
                     case "ArrowDown": case "KeyS": inputMap.backward = true; break;
@@ -453,13 +469,12 @@
                 }
             });
 
-            // TACTILE MOBILE
             const joystickZone = document.getElementById("mobileJoystickZone");
             const joystickKnob = document.getElementById("joystickKnob");
             let joystickActive = false; let touchOrigin = { x: 0, y: 0 };
 
             joystickZone.addEventListener("touchstart", (e) => {
-                startCongoMusic(); joystickActive = true;
+                initAudio(); joystickActive = true;
                 const touch = e.touches[0]; const rect = joystickZone.getBoundingClientRect();
                 touchOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
             });
@@ -484,14 +499,13 @@
             document.getElementById("btnMobileRun").addEventListener("touchstart", (e) => { e.preventDefault(); inputMap.run = true; });
             document.getElementById("btnMobileRun").addEventListener("touchend", (e) => { e.preventDefault(); inputMap.run = false; });
 
-            // UI
             document.getElementById("btnSoundToggle").addEventListener("click", () => {
                 gameState.soundEnabled = !gameState.soundEnabled;
-                document.getElementById("soundLabel").innerText = `MUSIQUE CONGOLAISE : ${gameState.soundEnabled ? 'ACTIVÉE' : 'DESACTIVÉE'}`;
+                document.getElementById("soundLabel").innerText = `SONS & MUSIQUE : ${gameState.soundEnabled ? 'ACTIVÉS' : 'DÉSACTIVÉS'}`;
             });
 
             document.getElementById("btnStartGame").addEventListener("click", () => {
-                startCongoMusic();
+                initAudio();
                 document.getElementById("mainMenu").classList.add("hidden");
                 document.getElementById("hudHeader").classList.remove("hidden");
                 document.getElementById("hudBottom").classList.remove("hidden");
@@ -514,8 +528,8 @@
                 } else {
                     icon.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl bg-red-500/20 text-red-500 border-2 border-red-500";
                     icon.innerHTML = '<i class="fa-solid fa-person-running"></i>';
-                    title.innerText = "ATTRAPÉ PAR LE QUARTIER !"; title.className = "text-3xl font-black uppercase tracking-wider text-red-500";
-                    desc.innerText = "Les habitants vous ont rattrapé ! Utilisez les flèches directionnelles et le radar pour éviter la foule.";
+                    title.innerText = "OKOKIMA TE !"; title.className = "text-3xl font-black uppercase tracking-wider text-red-500";
+                    desc.innerText = "La foule en colère vous a attrapé ! Utilisez le radar pour contourner les habitants.";
                 }
             }
 
