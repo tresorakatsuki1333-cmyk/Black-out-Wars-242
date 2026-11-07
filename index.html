@@ -2,14 +2,14 @@
 <html lang="fr" class="h-full bg-slate-950 text-slate-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Black-Out Wars 242 - Live Operations & Prototype</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>BLACK-OUT WARS 242 - Alpha 1.0 Prototype</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Orbitron & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
     <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -24,7 +24,6 @@
                             dark: '#AA7C11',
                         },
                         darkbg: '#0b0b0d',
-                        panelbg: 'rgba(15, 18, 28, 0.85)',
                     },
                     fontFamily: {
                         orbitron: ['Orbitron', 'sans-serif'],
@@ -38,589 +37,583 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0b0b0d;
-            overflow-x: hidden;
+            overflow: hidden;
+            touch-action: none;
         }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .gold-glow { text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
+        .gold-glow { text-shadow: 0 0 12px rgba(212, 175, 55, 0.6); }
         .gold-border { border-color: rgba(212, 175, 55, 0.4); }
         .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%); }
-        .cyan-glow { text-shadow: 0 0 10px rgba(6, 182, 212, 0.6); }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(10, 10, 15, 0.8); }
-        ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.4); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.8); }
-
-        /* Glassmorphism */
         .glass-panel {
             background: rgba(15, 18, 28, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(212, 175, 55, 0.25);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        /* Virtual D-Pad styling */
+        .btn-touch {
+            background: rgba(15, 18, 28, 0.75);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            color: #d4af37;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .btn-touch:active {
+            background: rgba(212, 175, 55, 0.4);
+            color: #ffffff;
         }
     </style>
 </head>
-<body class="h-full flex flex-col justify-between select-none">
+<body class="h-full w-full select-none">
 
-    <!-- TOP HEADER / HUD -->
-    <header class="w-full glass-panel z-20 px-4 py-3 border-b gold-border flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-lg gold-gradient flex items-center justify-center text-slate-950 font-orbitron font-black text-xl shadow-lg shadow-gold/20">
+    <!-- ÉCRAN DE CHARGEMENT -->
+    <div id="loader-screen" class="fixed inset-0 z-50 bg-[#0b0b0d] flex flex-col items-center justify-center p-4 transition-opacity duration-500">
+        <div class="text-center space-y-4 max-w-md w-full">
+            <div class="w-16 h-16 mx-auto rounded-2xl gold-gradient flex items-center justify-center text-slate-950 font-orbitron font-black text-2xl shadow-xl shadow-gold/20 animate-bounce">
+                242
+            </div>
+            <h1 class="font-orbitron text-2xl sm:text-3xl font-black text-gold tracking-wider gold-glow">
+                BLACK-OUT WARS 242
+            </h1>
+            <p class="text-xs text-slate-400 font-mono">Chargement du secteur 1 : Brazzaville Centre...</p>
+            <div class="w-full h-2.5 bg-slate-900 rounded-full border gold-border overflow-hidden p-0.5">
+                <div id="progress-bar" class="h-full gold-gradient rounded-full w-0 transition-all duration-300"></div>
+            </div>
+            <div id="progress-text" class="text-xs font-mono text-gold font-bold">0%</div>
+        </div>
+    </div>
+
+    <!-- HUD INTERFACE SUPERPOSÉE -->
+    <header class="fixed top-0 left-0 w-full z-20 px-4 py-3 flex items-center justify-between pointer-events-none">
+        <div class="glass-panel px-4 py-2 rounded-xl flex items-center gap-3 pointer-events-auto shadow-lg">
+            <div class="w-9 h-9 rounded-lg gold-gradient flex items-center justify-center text-slate-950 font-orbitron font-bold text-base">
                 242
             </div>
             <div>
-                <h1 class="font-orbitron font-extrabold text-lg sm:text-xl text-gold tracking-wider gold-glow">
-                    BLACK-OUT WARS <span class="text-xs px-2 py-0.5 rounded bg-gold/20 text-gold font-sans border border-gold/40">ALPHA 1.0</span>
-                </h1>
-                <p class="text-xs text-slate-400 flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Serveur Brazzaville Sync Active
-                </p>
+                <h2 class="font-orbitron text-xs sm:text-sm font-bold text-gold tracking-wide">ADOUKUS</h2>
+                <div class="flex items-center gap-2 text-[10px] text-slate-300 font-mono">
+                    <span>STATUT: <strong id="status-text" class="text-emerald-400">EN PATROUILLE</strong></span>
+                </div>
             </div>
         </div>
 
-        <div class="flex items-center space-x-2 sm:space-x-4">
-            <button id="toggle-sound-btn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm border border-slate-700 flex items-center gap-2 transition">
-                <i class="fas fa-volume-up text-gold"></i> <span class="hidden sm:inline">Son</span>
-            </button>
-            <button id="trigger-blackout-btn" class="px-4 py-1.5 rounded-lg bg-red-950/80 hover:bg-red-900 border border-red-500/50 text-red-200 text-xs sm:text-sm font-orbitron font-bold flex items-center gap-2 shadow-lg shadow-red-950/50 transition animate-pulse">
-                <i class="fas fa-bolt text-amber-400"></i> BLACK-OUT
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <button id="btn-pause" class="glass-panel px-3 py-2 rounded-xl text-gold hover:text-white transition flex items-center gap-2 text-xs font-orbitron font-bold">
+                <i class="fas fa-pause"></i> <span class="hidden sm:inline">PAUSE</span>
             </button>
         </div>
     </header>
 
-    <!-- MAIN CONTAINER -->
-    <main class="relative flex-1 w-full h-[calc(100vh-65px)] flex flex-col md:flex-row overflow-hidden">
-        
-        <!-- 3D GAME CANVAS CONTAINER -->
-        <div class="relative flex-1 h-full w-full bg-black">
-            <!-- CANVAS THREE.JS -->
-            <div id="canvas-container" class="w-full h-full"></div>
+    <!-- MISSION OBJECTIVE PANEL -->
+    <div class="fixed top-20 left-4 z-20 glass-panel px-4 py-3 rounded-xl max-w-xs pointer-events-auto">
+        <div class="text-[10px] font-orbitron font-bold text-gold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <i class="fas fa-crosshairs text-red-500 animate-pulse"></i> Objectif Mission 1
+        </div>
+        <p id="objective-text" class="text-xs text-slate-200 leading-snug">
+            Approche-toi du poteau électrique central et appuie sur <strong class="text-gold">[E]</strong> pour escalader et déclencher le blackout.
+        </p>
+    </div>
 
-            <!-- CONTROLS OVERLAY (MOBILE & DESKTOP) -->
-            <div class="absolute bottom-4 left-4 z-10 flex flex-col gap-2 pointer-events-auto">
-                <div class="glass-panel p-2 rounded-xl flex items-center gap-3">
-                    <div class="text-xs text-slate-300 font-mono">
-                        <div><span class="text-gold font-bold">Z Q S D / Flèches</span> : Déplacement</div>
-                        <div><span class="text-gold font-bold">ESPACE</span> : Saut | <span class="text-gold font-bold">E</span> : Escalader</div>
-                    </div>
-                </div>
+    <!-- MENU PAUSE (HIDDEN BY DEFAULT) -->
+    <div id="pause-modal" class="fixed inset-0 z-40 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full space-y-5 text-center border gold-border">
+            <h3 class="font-orbitron text-xl font-bold text-gold gold-glow">MISSION PAUSÉE</h3>
+            <div class="space-y-2 text-xs text-slate-300 font-mono text-left bg-slate-950/60 p-3 rounded-lg">
+                <div>Sauvegarde local : <span id="save-status" class="text-gold">Active</span></div>
+                <div>Blackout provoqué : <span id="save-blackout" class="text-slate-400">Non</span></div>
+                <div>Mission validée : <span id="save-mission" class="text-slate-400">En cours</span></div>
             </div>
-
-            <!-- TOUCH CONTROLS FOR MOBILE -->
-            <div class="absolute bottom-4 right-4 z-10 sm:hidden flex flex-col gap-2 items-end">
-                <div class="grid grid-cols-3 gap-1 w-36 h-36">
-                    <div></div>
-                    <button id="btn-up" class="glass-panel text-gold text-lg rounded flex items-center justify-center font-bold active:bg-gold/30">▲</button>
-                    <div></div>
-                    <button id="btn-left" class="glass-panel text-gold text-lg rounded flex items-center justify-center font-bold active:bg-gold/30">◀</button>
-                    <button id="btn-action" class="glass-panel text-amber-400 text-xs rounded flex items-center justify-center font-bold active:bg-gold/40">GRIMPER</button>
-                    <button id="btn-right" class="glass-panel text-gold text-lg rounded flex items-center justify-center font-bold active:bg-gold/30">▶</button>
-                    <div></div>
-                    <button id="btn-down" class="glass-panel text-gold text-lg rounded flex items-center justify-center font-bold active:bg-gold/30">▼</button>
-                    <div></div>
-                </div>
-            </div>
-
-            <!-- STATUS OVERLAY IN 3D -->
-            <div class="absolute top-4 left-4 z-10 glass-panel px-4 py-2 rounded-xl flex items-center gap-3 border gold-border">
-                <div class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></div>
-                <div class="text-xs font-mono">
-                    <span class="text-slate-400">Héros:</span> <span class="text-gold font-bold">ADOUKUS</span> | 
-                    <span class="text-slate-400">Lieu:</span> <span class="text-slate-200">Centre-Ville, Brazzaville</span>
-                </div>
+            <div class="space-y-2">
+                <button id="btn-resume" class="w-full py-2.5 rounded-xl gold-gradient text-slate-950 font-orbitron font-bold text-xs tracking-wider uppercase shadow-lg hover:opacity-90 transition">
+                    Reprendre le jeu
+                </button>
+                <button id="btn-reset" class="w-full py-2 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 font-orbitron font-bold text-xs hover:bg-red-900 transition">
+                    Réinitialiser la partie
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- FIREBASE REALTIME SIGNALEMENT & DASHBOARD PANEL -->
-        <aside class="w-full md:w-96 glass-panel border-t md:border-t-0 md:border-l gold-border flex flex-col h-1/2 md:h-full z-20">
-            <!-- PANEL TABS -->
-            <div class="flex border-b border-slate-800 text-xs font-orbitron font-semibold">
-                <button id="tab-reports" class="flex-1 py-3 text-gold border-b-2 border-gold bg-slate-900/40 flex items-center justify-center gap-2">
-                    <i class="fas fa-satellite-dish"></i> Signalements Live
-                </button>
-                <button id="tab-new" class="flex-1 py-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center justify-center gap-2">
-                    <i class="fas fa-plus-circle"></i> Signaler (242)
-                </button>
-            </div>
+    <!-- TOUCH CONTROLS (MOBILE) -->
+    <div class="fixed bottom-4 left-4 z-30 sm:hidden pointer-events-auto">
+        <div class="grid grid-cols-3 gap-1.5 w-36 h-36">
+            <div></div>
+            <button id="btn-up" class="btn-touch rounded-lg text-lg font-bold flex items-center justify-center">▲</button>
+            <div></div>
+            <button id="btn-left" class="btn-touch rounded-lg text-lg font-bold flex items-center justify-center">◀</button>
+            <div class="btn-touch rounded-lg text-[9px] font-orbitron text-slate-400 flex items-center justify-center text-center">D-PAD</div>
+            <button id="btn-right" class="btn-touch rounded-lg text-lg font-bold flex items-center justify-center">▶</button>
+            <div></div>
+            <button id="btn-down" class="btn-touch rounded-lg text-lg font-bold flex items-center justify-center">▼</button>
+            <div></div>
+        </div>
+    </div>
 
-            <!-- TAB CONTENT 1: LIVE FEED -->
-            <div id="content-reports" class="flex-1 overflow-y-auto p-4 space-y-3">
-                <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                    <span>Dernières pannes détectées</span>
-                    <span id="sync-status" class="text-emerald-400 text-[10px] flex items-center gap-1">
-                        <i class="fas fa-sync-alt animate-spin"></i> Direct Sync
-                    </span>
-                </div>
+    <div class="fixed bottom-4 right-4 z-30 sm:hidden pointer-events-auto flex gap-3 items-end">
+        <button id="btn-touch-action" class="w-14 h-14 rounded-full glass-panel border-gold text-gold font-orbitron font-black text-xs flex flex-col items-center justify-center shadow-lg active:scale-95 transition">
+            <i class="fas fa-hand-rock text-sm"></i>
+            <span>[E]</span>
+        </button>
+        <button id="btn-touch-jump" class="w-16 h-16 rounded-full gold-gradient text-slate-950 font-orbitron font-black text-xs flex flex-col items-center justify-center shadow-lg active:scale-95 transition">
+            <i class="fas fa-arrow-up text-base"></i>
+            <span>SAUT</span>
+        </button>
+    </div>
 
-                <!-- CARDS CONTAINER (POPULATED BY FIREBASE/MOCK SIM) -->
-                <div id="reports-list" class="space-y-2">
-                    <!-- Dynamic Items loaded here -->
-                </div>
-            </div>
+    <!-- CANVAS THREE.JS -->
+    <div id="canvas-container" class="w-full h-full"></div>
 
-            <!-- TAB CONTENT 2: NEW REPORT FORM -->
-            <div id="content-new" class="hidden flex-1 overflow-y-auto p-4 space-y-4">
-                <h3 class="text-sm font-orbitron font-bold text-gold uppercase tracking-wider">
-                    Signaler une panne d'électricité
-                </h3>
-                <form id="blackout-form" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Quartier / Arrondissement</label>
-                        <select id="district-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:border-gold focus:outline-none">
-                            <option value="Poto-Poto">Poto-Poto (Brazzaville)</option>
-                            <option value="Bacongo">Bacongo (Brazzaville)</option>
-                            <option value="Makelekele">Makélékélé (Brazzaville)</option>
-                            <option value="Ouenzé">Ouenzé (Brazzaville)</option>
-                            <option value="Moungali">Moungali (Brazzaville)</option>
-                            <option value="Talangaï">Talangaï (Brazzaville)</option>
-                            <option value="Centre-Ville">Centre-Ville / Nabemba</option>
-                            <option value="Pointe-Noire Centre">Pointe-Noire (Grand Centre)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Type d'incident</label>
-                        <select id="type-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:border-gold focus:outline-none">
-                            <option value="Blackout Total">Blackout Total (Quartier complet)</option>
-                            <option value="Coupure Sévère">Délestage Sévère (> 6h)</option>
-                            <option value="Baisse de Tension">Baisse de Tension critiques</option>
-                            <option value="Poteau Endommagé">Poteau / Câble endommagé</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Commentaire / Détails</label>
-                        <textarea id="comment-input" rows="3" placeholder="Ex: Panne générale sur l'avenue de la Paix depuis 18h..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:border-gold focus:outline-none resize-none"></textarea>
-                    </div>
-
-                    <button type="submit" id="submit-report-btn" class="w-full py-2.5 rounded-lg gold-gradient text-slate-950 font-orbitron font-bold text-xs uppercase tracking-wider hover:opacity-90 shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fas fa-paper-plane"></i> Transmettre le Signalement
-                    </button>
-                </form>
-            </div>
-
-            <!-- STATS FOOTER -->
-            <div class="p-3 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
-                <div>Total Signalements: <span id="total-count" class="text-gold font-bold">142</span></div>
-                <div>Impact: <span id="impact-level" class="text-red-400 font-bold">Élevé</span></div>
-            </div>
-        </aside>
-    </main>
-
-    <!-- FIREBASE MODULE & REALTIME SETUP -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global environment variables check
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'blackout-wars-242';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "demo-api-key",
-            authDomain: "demo-app.firebaseapp.com",
-            projectId: "demo-app",
-            storageBucket: "demo-app.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:123456"
-        };
-
-        let db = null;
-        let auth = null;
-        let user = null;
-        let isFirebaseAvailable = false;
-
-        // Initialize Firebase
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            // Authentication setup
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            };
-            
-            initAuth().catch(err => console.warn("Firebase Auth fallback triggered:", err));
-
-            onAuthStateChanged(auth, (u) => {
-                user = u;
-                if (user) {
-                    isFirebaseAvailable = true;
-                    setupFirestoreListener();
-                }
-            });
-        } catch (e) {
-            console.warn("Firestore running in simulated local mode:", e);
-        }
-
-        // Mock Initial Data if Firestore is offline
-        const mockReports = [
-            { id: "1", district: "Poto-Poto", type: "Blackout Total", comment: "Coupure secteur Marché de Poto-Poto", timestamp: new Date(Date.now() - 1000*60*15) },
-            { id: "2", district: "Bacongo", type: "Délestage Sévère", comment: "Depuis 14h vers la Case de Gaulle", timestamp: new Date(Date.now() - 1000*60*45) },
-            { id: "3", district: "Centre-Ville", type: "Baisse de Tension", comment: "Secteur Tour Nabemba stabilisé", timestamp: new Date(Date.now() - 1000*60*120) }
-        ];
-
-        // UI Tabs Switcher
-        const tabReports = document.getElementById("tab-reports");
-        const tabNew = document.getElementById("tab-new");
-        const contentReports = document.getElementById("content-reports");
-        const contentNew = document.getElementById("content-new");
-
-        tabReports.addEventListener("click", () => {
-            tabReports.className = "flex-1 py-3 text-gold border-b-2 border-gold bg-slate-900/40 flex items-center justify-center gap-2";
-            tabNew.className = "flex-1 py-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center justify-center gap-2";
-            contentReports.classList.remove("hidden");
-            contentNew.classList.add("hidden");
-        });
-
-        tabNew.addEventListener("click", () => {
-            tabNew.className = "flex-1 py-3 text-gold border-b-2 border-gold bg-slate-900/40 flex items-center justify-center gap-2";
-            tabReports.className = "flex-1 py-3 text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center justify-center gap-2";
-            contentNew.classList.remove("hidden");
-            contentReports.classList.add("hidden");
-        });
-
-        // Render Reports Feed
-        function renderReports(reports) {
-            const list = document.getElementById("reports-list");
-            list.innerHTML = "";
-            document.getElementById("total-count").textContent = reports.length + 140;
-
-            reports.forEach(r => {
-                const dateStr = r.timestamp?.seconds 
-                    ? new Date(r.timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                    : (r.timestamp instanceof Date ? r.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'À l\'instant');
-
-                const item = document.createElement("div");
-                item.className = "p-3 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-gold/40 transition flex flex-col gap-1";
-                item.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="font-orbitron font-bold text-xs text-gold flex items-center gap-1.5">
-                            <i class="fas fa-map-marker-alt text-red-400"></i> ${escapeHtml(r.district)}
-                        </span>
-                        <span class="text-[10px] text-slate-400 font-mono">${dateStr}</span>
-                    </div>
-                    <div class="text-xs font-semibold text-slate-200">${escapeHtml(r.type)}</div>
-                    <div class="text-xs text-slate-400 leading-tight">${escapeHtml(r.comment || 'Aucun détail fourni')}</div>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        function escapeHtml(str) {
-            return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-        }
-
-        // Firestore Listener (Rule 1 Path Compliant)
-        function setupFirestoreListener() {
-            if (!db || !user) return;
-            try {
-                const publicCol = collection(db, 'artifacts', appId, 'public', 'data', 'blackout_reports');
-                onSnapshot(publicCol, (snapshot) => {
-                    const data = [];
-                    snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
-                    // Client-side sort (Rule 2 Compliant)
-                    data.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-                    renderReports(data.length > 0 ? data : mockReports);
-                }, (error) => {
-                    console.warn("Firestore read fallback:", error);
-                    renderReports(mockReports);
-                });
-            } catch (err) {
-                renderReports(mockReports);
-            }
-        }
-
-        // Form Submission
-        document.getElementById("blackout-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const district = document.getElementById("district-select").value;
-            const type = document.getElementById("type-select").value;
-            const comment = document.getElementById("comment-input").value;
-
-            const newReport = {
-                district,
-                type,
-                comment,
-                timestamp: isFirebaseAvailable ? serverTimestamp() : new Date(),
-                userId: user ? user.uid : "anon-user"
-            };
-
-            if (isFirebaseAvailable && db && user) {
-                try {
-                    const publicCol = collection(db, 'artifacts', appId, 'public', 'data', 'blackout_reports');
-                    await addDoc(publicCol, newReport);
-                } catch (err) {
-                    console.error("Error adding document: ", err);
-                    mockReports.unshift(newReport);
-                    renderReports(mockReports);
-                }
-            } else {
-                mockReports.unshift(newReport);
-                renderReports(mockReports);
-            }
-
-            // Reset Form & Switch Tab
-            document.getElementById("comment-input").value = "";
-            tabReports.click();
-
-            // Trigger global 3D blackout effect for immersive feedback
-            if (window.triggerBlackoutEffect) {
-                window.triggerBlackoutEffect();
-            }
-        });
-
-        // Initial Render
-        renderReports(mockReports);
-    </script>
-
-    <!-- 3D THREE.JS GAME ENGINE CODE -->
+    <!-- 3D ENGINE & GAME LOGIC SCRIPT -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            // Scene, Camera, Renderer
+            // --- STATE & SAVES ---
+            const gameState = {
+                isPaused: false,
+                isClimbing: false,
+                isJumping: false,
+                blackoutTriggered: false,
+                missionCompleted: false,
+                verticalVelocity: 0,
+                progress: JSON.parse(localStorage.getItem('BOW242_SAVE')) || { blackout: false, completed: false }
+            };
+
+            const inputState = {
+                forward: false,
+                backward: false,
+                left: false,
+                right: false,
+                run: false,
+                jump: false,
+                action: false
+            };
+
+            // Loader screen progress simulation
+            let loadProgress = 0;
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const loaderScreen = document.getElementById('loader-screen');
+
+            const loaderInterval = setInterval(() => {
+                loadProgress += 15;
+                if (progressBar) progressBar.style.width = `${Math.min(loadProgress, 100)}%`;
+                if (progressText) progressText.innerText = `${Math.min(loadProgress, 100)}%`;
+
+                if (loadProgress >= 100) {
+                    clearInterval(loaderInterval);
+                    setTimeout(() => {
+                        if (loaderScreen) loaderScreen.style.opacity = '0';
+                        setTimeout(() => loaderScreen.style.display = 'none', 500);
+                    }, 300);
+                }
+            }, 100);
+
+            // Restore save if exists
+            if (gameState.progress.completed) {
+                gameState.missionCompleted = true;
+                document.getElementById('objective-text').innerText = "Mission accomplie ! Le blackout a été propagé dans le secteur de Brazzaville.";
+            }
+
+            // --- THREE.JS SCENE SETUP ---
             const container = document.getElementById('canvas-container');
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0c14);
-            scene.fog = new THREE.FogExp2(0x0a0c14, 0.025);
+            scene.background = new THREE.Color(0x0b0b0d);
+            scene.fog = new THREE.FogExp2(0x0b0b0d, 0.02);
 
-            const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
-            // Lighting Setup
-            const ambientLight = new THREE.AmbientLight(0xd4af37, 0.6);
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            dirLight.position.set(20, 40, 20);
+            const dirLight = new THREE.DirectionalLight(0xffdf73, 1.2);
+            dirLight.position.set(25, 45, 20);
             dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
             scene.add(dirLight);
 
-            // City Lights (Subject to Blackout)
-            const cityLights = [];
-            for (let i = 0; i < 6; i++) {
-                const pLight = new THREE.PointLight(0x06b6d4, 1.5, 15);
-                pLight.position.set((Math.random() - 0.5) * 40, 4, (Math.random() - 0.5) * 40);
+            // Street point lights (turn off during blackout)
+            const streetLights = [];
+            const lightPositions = [
+                [-10, 5, 0], [10, 5, 0], [-10, 5, 20], [10, 5, 20]
+            ];
+            lightPositions.forEach(pos => {
+                const pLight = new THREE.PointLight(0x06b6d4, 1.5, 18);
+                pLight.position.set(...pos);
                 scene.add(pLight);
-                cityLights.push(pLight);
-            }
+                streetLights.push(pLight);
+            });
 
-            // GROUND (Brazzaville Avenue)
-            const groundGeo = new THREE.PlaneGeometry(100, 100);
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x11131d, roughness: 0.8 });
+            // --- ENVIRONMENT CREATION ---
+            // Ground (Avenue)
+            const groundGeo = new THREE.PlaneGeometry(120, 120);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x14161f, roughness: 0.8 });
             const ground = new THREE.Mesh(groundGeo, groundMat);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // TOUR NABEMBA (Cylinder Model)
-            const nabembaGeo = new THREE.CylinderGeometry(3, 4, 30, 16);
-            const nabembaMat = new THREE.MeshStandardMaterial({ color: 0x242938, metalness: 0.5, roughness: 0.3 });
-            const nabemba = new THREE.Mesh(nabembaGeo, nabembaMat);
-            nabemba.position.set(-18, 15, -15);
-            nabemba.castShadow = true;
-            scene.add(nabemba);
+            // Road markings
+            for (let i = -50; i < 50; i += 8) {
+                const stripeGeo = new THREE.PlaneGeometry(0.4, 4);
+                const stripeMat = new THREE.MeshBasicMaterial({ color: 0xd4af37 });
+                const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+                stripe.rotation.x = -Math.PI / 2;
+                stripe.position.set(0, 0.02, i);
+                scene.add(stripe);
+            }
 
-            // BASILIQUE SAINTE-ANNE (Stylized Cone)
-            const sainteAnneGeo = new THREE.ConeGeometry(6, 14, 4);
-            const sainteAnneMat = new THREE.MeshStandardMaterial({ color: 0x3a2e1e, roughness: 0.6 });
+            // Tour Nabemba (Building)
+            const nabembaGroup = new THREE.Group();
+            const nabembaGeo = new THREE.CylinderGeometry(4.5, 5.5, 36, 16);
+            const nabembaMat = new THREE.MeshStandardMaterial({ color: 0x222634, metalness: 0.4, roughness: 0.3 });
+            const nabemba = new THREE.Mesh(nabembaGeo, nabembaMat);
+            nabemba.position.y = 18;
+            nabemba.castShadow = true;
+            nabembaGroup.add(nabemba);
+
+            // Spire
+            const spireGeo = new THREE.CylinderGeometry(0.2, 0.8, 8, 8);
+            const spireMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.9 });
+            const spire = new THREE.Mesh(spireGeo, spireMat);
+            spire.position.y = 40;
+            nabembaGroup.add(spire);
+            nabembaGroup.position.set(-25, 0, -15);
+            scene.add(nabembaGroup);
+
+            // Basilique Sainte-Anne (Cone structure)
+            const sainteAnneGeo = new THREE.ConeGeometry(7, 16, 4);
+            const sainteAnneMat = new THREE.MeshStandardMaterial({ color: 0x3d3224, roughness: 0.6 });
             const sainteAnne = new THREE.Mesh(sainteAnneGeo, sainteAnneMat);
-            sainteAnne.position.set(18, 7, -10);
+            sainteAnne.position.set(25, 8, -10);
             sainteAnne.rotation.y = Math.PI / 4;
+            sainteAnne.castShadow = true;
             scene.add(sainteAnne);
 
-            // TAXIS CONGOLAIS (Vert & Jaune)
-            const createTaxi = (x, z) => {
+            // Taxis Congolais (Vert & Jaune)
+            function createTaxi(x, z, rotation) {
                 const group = new THREE.Group();
+                const greenMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.4 });
+                const yellowMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.4 });
+                const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+
                 // Bottom Body (Green)
-                const bodyGeo = new THREE.BoxGeometry(2, 0.8, 3.8);
-                const greenMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
-                const body = new THREE.Mesh(bodyGeo, greenMat);
-                body.position.y = 0.5;
+                const body = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 4), greenMat);
+                body.position.y = 0.55;
+                body.castShadow = true;
                 group.add(body);
 
-                // Top Roof (Yellow)
-                const roofGeo = new THREE.BoxGeometry(1.8, 0.6, 2);
-                const yellowMat = new THREE.MeshStandardMaterial({ color: 0xeab308 });
-                const roof = new THREE.Mesh(roofGeo, yellowMat);
-                roof.position.set(0, 1.2, -0.2);
+                // Roof (Yellow)
+                const roof = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 2.2), yellowMat);
+                roof.position.set(0, 1.3, -0.2);
+                roof.castShadow = true;
                 group.add(roof);
 
+                // Wheels
+                const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 12);
+                wheelGeo.rotateZ(Math.PI / 2);
+                const positions = [[-1, 0.35, 1.2], [1, 0.35, 1.2], [-1, 0.35, -1.2], [1, 0.35, -1.2]];
+                positions.forEach(p => {
+                    const wheel = new THREE.Mesh(wheelGeo, blackMat);
+                    wheel.position.set(...p);
+                    group.add(wheel);
+                });
+
                 group.position.set(x, 0, z);
+                group.rotation.y = rotation;
                 scene.add(group);
-            };
+            }
 
-            createTaxi(-8, 5);
-            createTaxi(10, -4);
-            createTaxi(-2, 18);
+            createTaxi(-6, 8, 0.2);
+            createTaxi(8, -5, -0.4);
+            createTaxi(-14, 25, 1.5);
 
-            // POTEAU D'ESCALADE (Pole for Blackout trigger)
-            const poleGeo = new THREE.CylinderGeometry(0.2, 0.2, 10);
-            const poleMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
+            // Poteau Électrique Interactif
+            const poleGroup = new THREE.Group();
+            const poleGeo = new THREE.CylinderGeometry(0.2, 0.25, 12, 12);
+            const poleMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 });
             const pole = new THREE.Mesh(poleGeo, poleMat);
-            pole.position.set(0, 5, 0);
-            scene.add(pole);
+            pole.position.y = 6;
+            pole.castShadow = true;
+            poleGroup.add(pole);
 
-            // ADOUKUS HERO MODEL
+            // Transformateur box on pole
+            const transfoGeo = new THREE.BoxGeometry(1.2, 1.5, 0.8);
+            const transfoMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8 });
+            const transfo = new THREE.Mesh(transfoGeo, transfoMat);
+            transfo.position.set(0, 10.5, 0);
+            poleGroup.add(transfo);
+
+            poleGroup.position.set(0, 0, 5);
+            scene.add(poleGroup);
+
+            // Zone de Sortie de Mission (Cercle vert)
+            const exitGeo = new THREE.RingGeometry(0.1, 2.5, 32);
+            const exitMat = new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
+            const exitZone = new THREE.Mesh(exitGeo, exitMat);
+            exitZone.rotation.x = -Math.PI / 2;
+            exitZone.position.set(0, 0.03, 25);
+            scene.add(exitZone);
+
+            // --- PERSONNAGE ADOUKUS ARTICULÉ ---
             const adoukusGroup = new THREE.Group();
-            
-            // Body (Suit)
-            const adBodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.4);
-            const adSuitMat = new THREE.MeshStandardMaterial({ 
-                color: 0x0f172a, 
-                roughness: 0.6,
-                emissive: 0x06b6d4,
-                emissiveIntensity: 0.1
+
+            // Materials
+            const suitMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7 });
+            const armorGoldMat = new THREE.MeshStandardMaterial({
+                color: 0xd4af37,
+                metalness: 0.9,
+                roughness: 0.25,
+                emissive: 0x000000,
+                emissiveIntensity: 0
             });
-            const adBody = new THREE.Mesh(adBodyGeo, adSuitMat);
-            adBody.position.y = 1.1;
-            adoukusGroup.add(adBody);
+            const glowCyanMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
 
-            // Gold Shoulders
-            const goldMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.9, roughness: 0.2 });
-            const shoulderR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.45), goldMat);
-            shoulderR.position.set(0.48, 1.5, 0);
-            adoukusGroup.add(shoulderR);
+            // Torso
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.45), suitMat);
+            torso.position.y = 1.25;
+            torso.castShadow = true;
+            adoukusGroup.add(torso);
 
-            const shoulderL = shoulderR.clone();
-            shoulderL.position.x = -0.48;
-            adoukusGroup.add(shoulderL);
+            // Gold Chest Plate
+            const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.1), armorGoldMat);
+            chestPlate.position.set(0, 1.35, 0.22);
+            adoukusGroup.add(chestPlate);
 
             // Head
-            const headGeo = new THREE.SphereGeometry(0.28, 16, 16);
-            const head = new THREE.Mesh(headGeo, adSuitMat);
-            head.position.y = 1.9;
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), suitMat);
+            head.position.y = 2.05;
+            head.castShadow = true;
             adoukusGroup.add(head);
 
-            // Cape
-            const capeGeo = new THREE.BoxGeometry(0.7, 1.3, 0.05);
-            const capeMat = new THREE.MeshStandardMaterial({ color: 0x050508, roughness: 0.9 });
-            const cape = new THREE.Mesh(capeGeo, capeMat);
-            cape.position.set(0, 1.1, -0.22);
-            cape.rotation.x = 0.1;
-            adoukusGroup.add(cape);
+            // Visor (Cyan Glow)
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.1, 0.15), glowCyanMat);
+            visor.position.set(0, 2.08, 0.2);
+            adoukusGroup.add(visor);
 
-            adoukusGroup.position.set(0, 0, 8);
+            // Limbs articulated setup (Arms & Legs)
+            // Left Arm
+            const leftArmGroup = new THREE.Group();
+            leftArmGroup.position.set(-0.55, 1.7, 0);
+            const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.9), armorGoldMat);
+            leftArm.position.y = -0.45;
+            leftArmGroup.add(leftArm);
+            adoukusGroup.add(leftArmGroup);
+
+            // Right Arm
+            const rightArmGroup = new THREE.Group();
+            rightArmGroup.position.set(0.55, 1.7, 0);
+            const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.9), armorGoldMat);
+            rightArm.position.y = -0.45;
+            rightArmGroup.add(rightArm);
+            adoukusGroup.add(rightArmGroup);
+
+            // Left Leg
+            const leftLegGroup = new THREE.Group();
+            leftLegGroup.position.set(-0.25, 0.7, 0);
+            const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.11, 0.8), suitMat);
+            leftLeg.position.y = -0.4;
+            leftLegGroup.add(leftLeg);
+            adoukusGroup.add(leftLegGroup);
+
+            // Right Leg
+            const rightLegGroup = new THREE.Group();
+            rightLegGroup.position.set(0.25, 0.7, 0);
+            const rightLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.11, 0.8), suitMat);
+            rightLeg.position.y = -0.4;
+            rightLegGroup.add(rightLeg);
+            adoukusGroup.add(rightLegGroup);
+
+            adoukusGroup.position.set(0, 0, 0);
             scene.add(adoukusGroup);
 
-            // Keyboard Controls
-            const keys = {};
-            window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
-            window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+            // --- CONTROLS LISTENERS ---
+            window.addEventListener('keydown', (e) => handleKey(e.key.toLowerCase(), true));
+            window.addEventListener('keyup', (e) => handleKey(e.key.toLowerCase(), false));
+
+            function handleKey(key, isPressed) {
+                if (key === 'z' || key === 'arrowup') inputState.forward = isPressed;
+                if (key === 's' || key === 'arrowdown') inputState.backward = isPressed;
+                if (key === 'q' || key === 'arrowleft') inputState.left = isPressed;
+                if (key === 'd' || key === 'arrowright') inputState.right = isPressed;
+                if (key === 'shift') inputState.run = isPressed;
+                if (key === ' ') inputState.jump = isPressed;
+                if (key === 'e') inputState.action = isPressed;
+            }
 
             // Touch UI Listeners
             const bindTouch = (id, key) => {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
-                    el.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
-                }
+                if (!el) return;
+                el.addEventListener('touchstart', (e) => { e.preventDefault(); inputState[key] = true; });
+                el.addEventListener('touchend', (e) => { e.preventDefault(); inputState[key] = false; });
             };
-            bindTouch('btn-up', 'z');
-            bindTouch('btn-down', 's');
-            bindTouch('btn-left', 'q');
-            bindTouch('btn-right', 'd');
-            bindTouch('btn-action', 'e');
+            bindTouch('btn-up', 'forward');
+            bindTouch('btn-down', 'backward');
+            bindTouch('btn-left', 'left');
+            bindTouch('btn-right', 'right');
+            bindTouch('btn-touch-action', 'action');
+            bindTouch('btn-touch-jump', 'jump');
 
-            // Blackout Action Trigger
-            let isBlackoutActive = false;
-            window.triggerBlackoutEffect = () => {
-                isBlackoutActive = !isBlackoutActive;
-                ambientLight.intensity = isBlackoutActive ? 0.08 : 0.6;
-                dirLight.intensity = isBlackoutActive ? 0.1 : 0.8;
-                adSuitMat.emissiveIntensity = isBlackoutActive ? 0.9 : 0.1;
+            // Pause Modal Triggers
+            document.getElementById('btn-pause').addEventListener('click', () => {
+                gameState.isPaused = true;
+                document.getElementById('pause-modal').classList.remove('hidden');
+                document.getElementById('save-blackout').innerText = gameState.blackoutTriggered ? 'Oui' : 'Non';
+                document.getElementById('save-mission').innerText = gameState.missionCompleted ? 'Accomplie' : 'En cours';
+            });
 
-                cityLights.forEach(l => l.intensity = isBlackoutActive ? 0 : 1.5);
-                
-                const btn = document.getElementById('trigger-blackout-btn');
-                if (isBlackoutActive) {
-                    btn.classList.add('bg-amber-500', 'text-slate-950');
-                    btn.classList.remove('bg-red-950/80', 'text-red-200');
-                    btn.innerHTML = `<i class="fas fa-sun"></i> RESTAURER COURANT`;
-                } else {
-                    btn.classList.remove('bg-amber-500', 'text-slate-950');
-                    btn.classList.add('bg-red-950/80', 'text-red-200');
-                    btn.innerHTML = `<i class="fas fa-bolt text-amber-400"></i> BLACK-OUT`;
-                }
-            };
+            document.getElementById('btn-resume').addEventListener('click', () => {
+                gameState.isPaused = false;
+                document.getElementById('pause-modal').classList.add('hidden');
+            });
 
-            document.getElementById('trigger-blackout-btn').addEventListener('click', window.triggerBlackoutEffect);
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                localStorage.removeItem('BOW242_SAVE');
+                location.reload();
+            });
 
-            // Game Loop variables
-            let isClimbing = false;
-            let verticalVel = 0;
+            // --- BLACKOUT TRIGGER FUNCTION ---
+            function triggerBlackout() {
+                gameState.blackoutTriggered = true;
+                ambientLight.intensity = 0.08;
+                dirLight.intensity = 0.15;
 
-            // ANIMATION LOOP
+                // Turn off street lights
+                streetLights.forEach(l => l.intensity = 0);
+
+                // Electroluminescent suit effect
+                armorGoldMat.emissive = new THREE.Color(0xd4af37);
+                armorGoldMat.emissiveIntensity = 0.85;
+
+                document.getElementById('status-text').innerText = "BLACK-OUT ACTIF";
+                document.getElementById('status-text').className = "text-amber-400 font-bold gold-glow";
+                document.getElementById('objective-text').innerHTML = "Le blackout est enclenché ! Rejoins la <strong class='text-emerald-400'>zone verte de sortie</strong> pour terminer la mission.";
+
+                // Save status
+                gameState.progress.blackout = true;
+                localStorage.setItem('BOW242_SAVE', JSON.stringify(gameState.progress));
+            }
+
+            // --- ANIMATION & PHYSICS LOOP ---
+            let animClock = 0;
+
             function animate() {
                 requestAnimationFrame(animate);
 
-                // Movement logic
-                const speed = 0.12;
-                let dx = 0, dz = 0;
+                if (gameState.isPaused) return;
 
-                if (keys['z'] || keys['arrowup']) dz -= 1;
-                if (keys['s'] || keys['arrowdown']) dz += 1;
-                if (keys['q'] || keys['arrowleft']) dx -= 1;
-                if (keys['d'] || keys['arrowright']) dx += 1;
+                animClock += 0.1;
+                const speed = inputState.run ? 0.18 : 0.1;
+                let moveX = 0, moveZ = 0;
 
-                // Pole climbing detection
-                const distToPole = adoukusGroup.position.distanceTo(pole.position);
-                if (distToPole < 1.2 && keys['e']) {
-                    isClimbing = true;
+                if (inputState.forward) moveZ += 1;
+                if (inputState.backward) moveZ -= 1;
+                if (inputState.left) moveX -= 1;
+                if (inputState.right) moveX += 1;
+
+                // Pole proximity & Climbing
+                const distToPole = adoukusGroup.position.distanceTo(poleGroup.position);
+                if (distToPole < 1.4 && inputState.action) {
+                    gameState.isClimbing = true;
                 }
 
-                if (isClimbing) {
-                    if (keys['z'] || keys['arrowup']) adoukusGroup.position.y += 0.08;
-                    if (keys['s'] || keys['arrowdown']) adoukusGroup.position.y -= 0.08;
-                    if (adoukusGroup.position.y < 0) { adoukusGroup.position.y = 0; isClimbing = false; }
-                    if (adoukusGroup.position.y > 8.5 && !isBlackoutActive) {
-                        window.triggerBlackoutEffect();
+                if (gameState.isClimbing) {
+                    // Vertical Movement on Pole
+                    if (inputState.forward) adoukusGroup.position.y += 0.08;
+                    if (inputState.backward) adoukusGroup.position.y -= 0.08;
+
+                    // Limb climbing movement animation
+                    leftArmGroup.rotation.x = Math.sin(animClock * 2) * 0.5;
+                    rightArmGroup.rotation.x = -Math.sin(animClock * 2) * 0.5;
+                    leftLegGroup.rotation.x = -Math.sin(animClock * 2) * 0.4;
+                    rightLegGroup.rotation.x = Math.sin(animClock * 2) * 0.4;
+
+                    if (adoukusGroup.position.y <= 0) {
+                        adoukusGroup.position.y = 0;
+                        gameState.isClimbing = false;
+                    }
+
+                    // Reached top -> Trigger Blackout
+                    if (adoukusGroup.position.y >= 10.5 && !gameState.blackoutTriggered) {
+                        triggerBlackout();
                     }
                 } else {
-                    // Gravity & Jump
+                    // Ground Movement & Rotation
+                    if (moveX !== 0 || moveZ !== 0) {
+                        const targetAngle = Math.atan2(moveX, moveZ);
+                        adoukusGroup.rotation.y = targetAngle;
+
+                        adoukusGroup.position.x += Math.sin(targetAngle) * speed;
+                        adoukusGroup.position.z += Math.cos(targetAngle) * speed;
+
+                        // Walking/Running Limb Animation
+                        const legSwing = Math.sin(animClock * (inputState.run ? 2.5 : 1.5)) * 0.6;
+                        leftArmGroup.rotation.x = -legSwing;
+                        rightArmGroup.rotation.x = legSwing;
+                        leftLegGroup.rotation.x = legSwing;
+                        rightLegGroup.rotation.x = -legSwing;
+                    } else {
+                        // Reset limbs to Idle
+                        leftArmGroup.rotation.x = 0;
+                        rightArmGroup.rotation.x = 0;
+                        leftLegGroup.rotation.x = 0;
+                        rightLegGroup.rotation.x = 0;
+                    }
+
+                    // Jump Physics
+                    if (inputState.jump && adoukusGroup.position.y === 0) {
+                        gameState.verticalVelocity = 0.22;
+                    }
+
+                    adoukusGroup.position.y += gameState.verticalVelocity;
+
                     if (adoukusGroup.position.y > 0) {
-                        verticalVel -= 0.01;
+                        gameState.verticalVelocity -= 0.012; // Gravity
                     } else {
                         adoukusGroup.position.y = 0;
-                        verticalVel = 0;
-                        if (keys[' ']) verticalVel = 0.22;
+                        gameState.verticalVelocity = 0;
                     }
-
-                    if (dx !== 0 || dz !== 0) {
-                        const angle = Math.atan2(dx, dz);
-                        adoukusGroup.rotation.y = angle;
-                        adoukusGroup.position.x += Math.sin(angle) * speed;
-                        adoukusGroup.position.z += Math.cos(angle) * speed;
-                    }
-
-                    adoukusGroup.position.y += verticalVel;
                 }
 
-                // Camera Follow
-                camera.position.x = THREE.MathUtils.lerp(camera.position.x, adoukusGroup.position.x, 0.08);
-                camera.position.z = THREE.MathUtils.lerp(camera.position.z, adoukusGroup.position.z + 10, 0.08);
-                camera.position.y = THREE.MathUtils.lerp(camera.position.y, adoukusGroup.position.y + 4, 0.08);
+                // Mission Completion check
+                const distToExit = adoukusGroup.position.distanceTo(exitZone.position);
+                if (distToExit < 2.5 && gameState.blackoutTriggered && !gameState.missionCompleted) {
+                    gameState.missionCompleted = true;
+                    gameState.progress.completed = true;
+                    localStorage.setItem('BOW242_SAVE', JSON.stringify(gameState.progress));
+
+                    document.getElementById('objective-text').innerText = "MISSION 1 REUSSIE ! La progression a été sauvegardée.";
+                    document.getElementById('status-text').innerText = "VICTOIRE";
+                    document.getElementById('status-text').className = "text-emerald-400 font-bold gold-glow";
+                }
+
+                // Smooth 3rd Person Camera Follow
+                camera.position.x = ThreeLerp(camera.position.x, adoukusGroup.position.x, 0.08);
+                camera.position.z = ThreeLerp(camera.position.z, adoukusGroup.position.z + 8, 0.08);
+                camera.position.y = ThreeLerp(camera.position.y, adoukusGroup.position.y + 3.5, 0.08);
                 camera.lookAt(adoukusGroup.position.x, adoukusGroup.position.y + 1.2, adoukusGroup.position.z);
 
                 renderer.render(scene, camera);
             }
 
+            function ThreeLerp(start, end, amt) {
+                return (1 - amt) * start + amt * end;
+            }
+
             animate();
 
-            // Window Resize
+            // Resize handler
             window.addEventListener('resize', () => {
-                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setSize(window.innerWidth, window.innerHeight);
             });
         });
     </script>
