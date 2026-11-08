@@ -3,102 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BLACK-OUT WARS 242</title>
+  <title>BLACK-OUT WARS 242 - Brazzaville Urbain Complet</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0a0a10; font-family: sans-serif; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background-color: #05070e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
     
     #ui-hud {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      color: #fff;
-      font-family: monospace;
-      font-size: 14px;
-      background: rgba(0,0,0,0.85);
-      padding: 12px 18px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,153,0,0.5);
-      z-index: 100;
-      pointer-events: none;
+      position: absolute; top: 20px; left: 20px; color: #fff; font-family: monospace; font-size: 13px;
+      background: rgba(10, 15, 25, 0.9); padding: 14px 20px; border-radius: 10px;
+      border: 1px solid rgba(255,153,0,0.6); z-index: 100; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
-    #ui-hud h1 { font-size: 16px; color: #ff9900; margin-bottom: 5px; }
+    #ui-hud h1 { font-size: 16px; color: #ff9900; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
 
-    #anger-bar-container {
-      width: 100%;
-      height: 10px;
-      background: #333;
-      border-radius: 5px;
-      margin-top: 8px;
-      overflow: hidden;
-    }
-    #anger-bar {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #ffcc00, #ff2200);
-      transition: width 0.3s;
-    }
+    #anger-bar-container { width: 100%; height: 10px; background: #222; border-radius: 5px; margin-top: 8px; overflow: hidden; border: 1px solid #444; }
+    #anger-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ffcc00, #ff2200); transition: width 0.3s; }
 
-    /* Radar Mini-Map */
     #radar-container {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 130px;
-      height: 130px;
-      background: rgba(10, 15, 25, 0.85);
-      border: 2px solid #ff9900;
-      border-radius: 50%;
-      z-index: 100;
-      overflow: hidden;
-      box-shadow: 0 0 15px rgba(255, 153, 0, 0.3);
+      position: absolute; top: 20px; right: 20px; width: 135px; height: 135px;
+      background: rgba(8, 12, 20, 0.9); border: 2px solid #ff9900; border-radius: 50%;
+      z-index: 100; overflow: hidden; box-shadow: 0 0 15px rgba(255, 153, 0, 0.3);
     }
-    #radar-canvas {
-      width: 100%;
-      height: 100%;
-    }
+    #radar-canvas { width: 100%; height: 100%; }
 
-    #shop-btn-toggle {
-      position: absolute;
-      top: 160px;
-      right: 20px;
-      padding: 8px 14px;
-      background: #ff9900;
-      color: #111;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      z-index: 100;
-      box-shadow: 0 0 10px rgba(255,153,0,0.5);
-    }
-
-    /* Manette PlayStation */
-    #ps-controls {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      width: 150px;
-      height: 150px;
-      z-index: 999;
-      touch-action: none;
-    }
+    #ps-controls { position: fixed; bottom: 25px; right: 25px; width: 150px; height: 150px; z-index: 999; touch-action: none; }
     .ps-btn {
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.4);
-      background: rgba(0,0,0,0.6);
-      color: white;
-      font-weight: bold;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
+      position: absolute; width: 48px; height: 48px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.7);
+      color: white; font-weight: bold; font-size: 18px; display: flex;
+      align-items: center; justify-content: center; cursor: pointer; user-select: none;
     }
     .ps-btn:active { transform: scale(0.9); }
     #btn-triangle { top: 0; left: 51px; border-color: #00ffaa; color: #00ffaa; }
@@ -106,146 +39,14 @@
     #btn-circle { top: 51px; right: 0; border-color: #ff3333; color: #ff3333; }
     #btn-cross { bottom: 0; left: 51px; border-color: #3399ff; color: #3399ff; }
 
-    #joystick-container {
-      position: fixed;
-      bottom: 30px;
-      left: 30px;
-      width: 100px;
-      height: 100px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid rgba(255, 153, 0, 0.5);
-      border-radius: 50%;
-      touch-action: none;
-      z-index: 999;
-      cursor: pointer;
-    }
-    #joystick-knob {
-      position: absolute;
-      top: 30px;
-      left: 30px;
-      width: 40px;
-      height: 40px;
-      background: #ff6600;
-      border-radius: 50%;
-      pointer-events: none;
-      box-shadow: 0 0 10px rgba(255,102,0,0.8);
-    }
-
-    /* Modal Boutique */
-    #shop-modal {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(15, 15, 25, 0.95);
-      border: 2px solid #ff9900;
-      padding: 20px;
-      border-radius: 12px;
-      width: 320px;
-      color: white;
-      z-index: 20000;
-      display: none;
-      box-shadow: 0 0 30px rgba(0,0,0,0.9);
-    }
-    #shop-modal h3 { color: #ff9900; text-align: center; margin-bottom: 15px; font-size: 20px; }
-    .shop-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255,255,255,0.05);
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-    }
-    .shop-item button {
-      padding: 6px 12px;
-      background: #00aa55;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .shop-close-btn {
-      width: 100%;
-      padding: 10px;
-      background: #444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    /* Dialogue Corruption */
     #dialog-box {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(20, 20, 30, 0.95);
-      border: 2px solid #ff9900;
-      padding: 25px;
-      border-radius: 12px;
-      width: 350px;
-      color: white;
-      text-align: center;
-      z-index: 20000;
-      display: none;
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(15, 20, 30, 0.96); border: 2px solid #ff9900; padding: 22px;
+      border-radius: 14px; width: 330px; color: white; z-index: 20000; display: none;
     }
-    #dialog-box h3 { color: #ff9900; margin-bottom: 10px; font-size: 18px; }
-    #dialog-box p { font-size: 14px; margin-bottom: 20px; color: #ddd; }
-    .dialog-btns { display: flex; flex-direction: column; gap: 10px; }
-    .dialog-btns button {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 13px;
-    }
+    .dialog-btns button { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
     .btn-bribe { background: #00aa55; color: white; }
-    .btn-cut { background: #ff2200; color: white; }
-
-    .game-modal {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
-      color: white;
-      font-family: sans-serif;
-      display: none;
-    }
-    .game-modal h2 { font-size: 36px; margin-bottom: 15px; }
-    .game-modal p { font-size: 18px; margin-bottom: 25px; text-align: center; max-width: 80%; }
-    .game-modal button {
-      padding: 12px 30px;
-      background: #ff6600;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .threat-bubble {
-      position: absolute;
-      background: #ff2200;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: bold;
-      pointer-events: none;
-      white-space: nowrap;
-      transform: translate(-50%, -100%);
-      z-index: 500;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-      border: 1px solid #ffcc00;
-    }
+    .btn-cut { background: #ff2200; color: white; margin-top: 10px; width: 100%; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -256,89 +57,35 @@
     <p style="color: #ffcc00; font-weight: bold;">Zone : <span id="level-name">Bacongo</span></p>
     <p>Poteaux sabotés : <span id="sabotage-count">0</span>/5</p>
     <p>FCFA : <span id="money-count">0</span> FCFA</p>
-    <p>Pétards : <span id="decoy-count">0</span> [🔲/Maj]</p>
     <p>Statut : <span id="stealth-status" style="color: #00ffaa;">Visible</span></p>
-    <div id="anger-bar-container">
-      <div id="anger-bar"></div>
-    </div>
-    <p style="font-size: 11px; margin-top: 4px; color: #aaa;">Colère de la population</p>
+    <div id="anger-bar-container"><div id="anger-bar"></div></div>
   </div>
 
-  <div id="radar-container">
-    <canvas id="radar-canvas" width="130" height="130"></canvas>
-  </div>
+  <div id="radar-container"><canvas id="radar-canvas" width="135" height="135"></canvas></div>
 
-  <button id="shop-btn-toggle" onclick="toggleShop()">🛒 BOUTIQUE</button>
-
-  <!-- Disposition Manette PlayStation -->
   <div id="ps-controls">
-    <div class="ps-btn" id="btn-triangle" title="Se cacher (C / 🔺)">🔺</div>
-    <div class="ps-btn" id="btn-square" title="Pétard (Maj / 🔲)">🔲</div>
-    <div class="ps-btn" id="btn-circle" title="Interaction / Sabotage (E / ⭕)">⭕</div>
-    <div class="ps-btn" id="btn-cross" title="Saut (Espace / ❌)">❌</div>
+    <div class="ps-btn" id="btn-triangle">🔺</div>
+    <div class="ps-btn" id="btn-square">🔲</div>
+    <div class="ps-btn" id="btn-circle">⭕</div>
+    <div class="ps-btn" id="btn-cross">❌</div>
   </div>
 
-  <!-- Modal Boutique -->
-  <div id="shop-modal">
-    <h3>BOUTIQUE MARCHÉ</h3>
-    <div class="shop-item">
-      <div>
-        <strong>👟 Baskets Turbo</strong><br>
-        <small style="color: #aaa;">Vitesse +30%</small>
-      </div>
-      <button onclick="buyItem('shoes', 3000)">3 000 F</button>
-    </div>
-    <div class="shop-item">
-      <div>
-        <strong>🧨 Pétard Diversion</strong><br>
-        <small style="color: #aaa;">Attire la foule</small>
-      </div>
-      <button onclick="buyItem('decoy', 2000)">2 000 F</button>
-    </div>
-    <button class="shop-close-btn" onclick="toggleShop()">FERMER</button>
-  </div>
-
-  <!-- Dialogue Corruption -->
   <div id="dialog-box">
     <h3>CONTRÔLE SNE</h3>
-    <p id="dialog-text">Habitant : « Grand frère, pardon ne coupe pas le courant ! Prends ces 5000 FCFA et arrangeons ça discrètement... »</p>
+    <p>Habitant : « Grand frère, pardon ne coupe pas le courant ! Prends 5000 FCFA... »</p>
     <div class="dialog-btns">
-      <button class="btn-bribe" onclick="resolveBill(false)">🤝 Accepter l'argent (Laisser le courant)</button>
-      <button class="btn-cut" onclick="resolveBill(true)">😈 Prendre l'argent ET couper quand même !</button>
+      <button class="btn-bribe" onclick="resolveBill(false)">🤝 Accepter l'argent</button>
+      <button class="btn-cut" onclick="resolveBill(true)">😈 Couper quand même !</button>
     </div>
   </div>
 
-  <div id="joystick-container">
-    <div id="joystick-knob"></div>
-  </div>
-
-  <!-- Modal Transition de Niveau -->
-  <div id="game-overlay-next" class="game-modal">
-    <h2 style="color: #ffcc00;">QUARTIER NETTOYÉ ! ⚡</h2>
-    <p id="next-level-text">Bravo Adoukus ! Préparesse-toi à intervenir dans le quartier suivant...</p>
-    <button onclick="startNextLevel()">QUARTIER SUIVANT ➔</button>
-  </div>
-
-  <div id="game-overlay-win" class="game-modal">
-    <h2 style="color: #00ff88;">VICTOIRE TOTALE ! ⚡🏆</h2>
-    <p>Tout Brazzaville est plongé dans le noir absolu ! Tu es le roi du Black-Out !</p>
-    <button onclick="location.reload()">REJOUER DEPUIS LE DÉBUT</button>
-  </div>
-
-  <div id="game-overlay-lose" class="game-modal">
-    <h2 style="color: #ff2200;">CAPTURÉ ! 🚨</h2>
-    <p>La foule en colère t'a attrapé ! Fin de partie...</p>
-    <button onclick="location.reload()">RÉESSAYER</button>
-  </div>
-
-  <div id="bubbles-container"></div>
   <div id="canvas-container"></div>
 
   <script>
     const container = document.getElementById('canvas-container');
-    const bubblesContainer = document.getElementById('bubbles-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a10);
+    scene.background = new THREE.Color(0x050710);
+    scene.fog = new THREE.FogExp2(0x050710, 0.007);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -346,477 +93,268 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
-    scene.add(ambientLight);
+    scene.add(new THREE.AmbientLight(0x223355, 0.7));
+    const moon = new THREE.DirectionalLight(0x7799bb, 0.5);
+    moon.position.set(40, 80, 20);
+    scene.add(moon);
 
-    const sunLight = new THREE.DirectionalLight(0xffaa44, 0.3);
-    sunLight.position.set(30, 50, 20);
-    scene.add(sunLight);
+    const collisionBoxes = [];
+    const movingTaxis = [];
+    const pedestrians = [];
 
-    const groundGeo = new THREE.PlaneGeometry(200, 200);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x1c1d22, roughness: 0.9 });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    scene.add(ground);
+    // --- FLEUVE CONGO ---
+    const river = new THREE.Mesh(
+      new THREE.PlaneGeometry(600, 150),
+      new THREE.MeshStandardMaterial({ color: 0x001133, roughness: 0.1, metalness: 0.8 })
+    );
+    river.rotation.x = -Math.PI / 2;
+    river.position.set(0, -0.5, -130);
+    scene.add(river);
 
-    const gridHelper = new THREE.GridHelper(200, 40, 0xff9900, 0x222233);
-    gridHelper.position.y = 0.01;
-    scene.add(gridHelper);
+    // --- MATÉRIAUX URBAINS ---
+    const asphaltMat = new THREE.MeshStandardMaterial({ color: 0x1a1c23, roughness: 0.95 });
+    const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x4a4d58, roughness: 0.8 });
+    const whiteLineMat = new THREE.MeshBasicMaterial({ color: 0xeeeeee });
+    const wallColors = [0xc47e5a, 0x8c7a6b, 0xd4a373, 0x587b7f, 0x9b59b6];
 
-    // Bâtiments
-    const buildingColors = [0x3a3b45, 0x4a2e2b, 0x2b3a4a, 0x555555];
-    for (let i = 0; i < 40; i++) {
-      const w = 4 + Math.random() * 8;
-      const h = 6 + Math.random() * 14;
-      const d = 4 + Math.random() * 8;
-      const bGeo = new THREE.BoxGeometry(w, h, d);
-      const bMat = new THREE.MeshStandardMaterial({ color: buildingColors[i % buildingColors.length] });
-      const building = new THREE.Mesh(bGeo, bMat);
-      let x = (Math.random() - 0.5) * 150;
-      let z = (Math.random() - 0.5) * 150;
-      if (Math.abs(x) < 10 && Math.abs(z) < 10) x += 20;
-      building.position.set(x, h / 2, z);
-      scene.add(building);
-    }
-
-    // --- ZONES DE CAMOUFLAGE (HIDE ZONES) ---
-    const hideSpots = [
-      { x: -25, z: 5 },
-      { x: 25, z: -25 },
-      { x: 10, z: -35 }
-    ];
-    hideSpots.forEach(pos => {
-      const spotGeo = new THREE.CylinderGeometry(1.5, 1.5, 3, 16);
-      const spotMat = new THREE.MeshStandardMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.35 });
-      const spotMesh = new THREE.Mesh(spotGeo, spotMat);
-      spotMesh.position.set(pos.x, 1.5, pos.z);
-      scene.add(spotMesh);
-    });
-
-    // --- CONFIGURATION DES NIVEAUX ---
-    const LEVELS = [
-      { name: "Bacongo", speedMultiplier: 1.0, countToWin: 5 },
-      { name: "Poto-Poto", speedMultiplier: 1.3, countToWin: 5 },
-      { name: "La Corniche", speedMultiplier: 1.6, countToWin: 5 }
-    ];
-    let currentLevelIndex = 0;
-
-    // --- POTEAUX SNE ---
-    let poles = [];
-    const polePositions = [
-      { x: 6, z: -8 },
-      { x: -12, z: 14 },
-      { x: 18, z: 18 },
-      { x: -18, z: -20 },
-      { x: 0, z: 25 }
-    ];
-
-    function setupPoles() {
-      // Nettoyage anciens poteaux
-      poles.forEach(p => scene.remove(p.group));
-      poles = [];
-
-      polePositions.forEach((pos) => {
-        const poleGroup = new THREE.Group();
-        const poleGeo = new THREE.CylinderGeometry(0.2, 0.2, 6);
-        const poleMat = new THREE.MeshStandardMaterial({ color: 0x444444 });
-        const poleMesh = new THREE.Mesh(poleGeo, poleMat);
-        poleMesh.position.y = 3;
-        poleGroup.add(poleMesh);
-
-        const boxGeo = new THREE.BoxGeometry(0.8, 1, 0.6);
-        const boxMat = new THREE.MeshStandardMaterial({ color: 0x1b7a3a });
-        const boxMesh = new THREE.Mesh(boxGeo, boxMat);
-        boxMesh.position.set(0, 2.5, 0.3);
-        poleGroup.add(boxMesh);
-
-        const light = new THREE.PointLight(0xffaa22, 2.5, 20);
-        light.position.set(0, 5.5, 0);
-        poleGroup.add(light);
-
-        poleGroup.position.set(pos.x, 0, pos.z);
-        scene.add(poleGroup);
-
-        poles.push({
-          group: poleGroup,
-          light: light,
-          active: true,
-          position: new THREE.Vector3(pos.x, 0, pos.z)
-        });
-      });
-    }
-    setupPoles();
-
-    // --- FOULE & MENACES ---
-    const THREAT_MESSAGES = [
-      "Moyibi zongisa mbongo ! ⚡",
-      "Toboma yo ! 😡",
-      "Il a pris l'argent et coupé quand même !",
-      "Véreux de SNE !",
-      "Toufi na yo !",
-      "Zongisa courant na biso !"
-    ];
-
-    let angryCrowd = [];
-    const crowdMat = new THREE.MeshStandardMaterial({ color: 0xcc2222 });
-
-    function clearCrowd() {
-      angryCrowd.forEach(c => {
-        scene.remove(c.mesh);
-        if (c.bubble && c.bubble.parentNode) c.bubble.parentNode.removeChild(c.bubble);
-      });
-      angryCrowd = [];
-    }
-
-    function spawnAngryCitizen(pos) {
-      const lvlSpeed = LEVELS[currentLevelIndex].speedMultiplier;
-      for (let i = 0; i < 3; i++) {
-        const citizenGroup = new THREE.Group();
-        const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.3), crowdMat);
-        body.position.y = 0.9;
-        citizenGroup.add(body);
-
-        const headMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21 });
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), headMat);
-        head.position.y = 1.5;
-        citizenGroup.add(head);
-
-        const offsetX = (Math.random() - 0.5) * 6;
-        const offsetZ = (Math.random() - 0.5) * 6;
-        citizenGroup.position.set(pos.x + offsetX, 0, pos.z + offsetZ);
-
-        const bubble = document.createElement('div');
-        bubble.className = 'threat-bubble';
-        bubble.innerText = THREAT_MESSAGES[Math.floor(Math.random() * THREAT_MESSAGES.length)];
-        bubblesContainer.appendChild(bubble);
-
-        scene.add(citizenGroup);
-        angryCrowd.push({
-          mesh: citizenGroup,
-          speed: (0.035 + Math.random() * 0.02) * lvlSpeed,
-          bubble: bubble
-        });
+    // --- MONUMENTS (Tour Nabemba) ---
+    function createTourNabemba(x, z) {
+      const group = new THREE.Group();
+      const glassMat = new THREE.MeshStandardMaterial({ color: 0x446688, metalness: 0.9, roughness: 0.1 });
+      for (let i = 0; i < 2; i++) {
+        const offset = (i === 0) ? -6 : 6;
+        const tower = new THREE.Mesh(new THREE.CylinderGeometry(5, 5.5, 45, 24), glassMat);
+        tower.position.set(offset, 22.5, 0);
+        group.add(tower);
       }
+      const bridge = new THREE.Mesh(new THREE.BoxGeometry(8, 25, 6), glassMat);
+      bridge.position.set(0, 25, 0); group.add(bridge);
+      group.position.set(x, 0, z); scene.add(group);
+      collisionBoxes.push({ minX: x - 12, maxX: x + 12, minZ: z - 8, maxZ: z + 8 });
+    }
+    createTourNabemba(-60, -50);
+
+    // --- TAXIS VERTS ET BLANCS ---
+    function createTaxi(x, z, rotY) {
+      const taxiGroup = new THREE.Group();
+      const greenMat = new THREE.MeshStandardMaterial({ color: 0x118833, roughness: 0.3 });
+      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+      
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.8, 3.8), greenMat);
+      body.position.y = 0.5; taxiGroup.add(body);
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.6, 2.2), whiteMat);
+      roof.position.set(0, 1.1, -0.1); taxiGroup.add(roof);
+
+      // Phares allumés
+      const headlight = new THREE.SpotLight(0xffffaa, 3, 15, 0.4);
+      headlight.position.set(0, 0.6, 1.9);
+      headlight.target.position.set(0, 0, 10);
+      taxiGroup.add(headlight); taxiGroup.add(headlight.target);
+
+      taxiGroup.position.set(x, 0, z);
+      taxiGroup.rotation.y = rotY || 0;
+      scene.add(taxiGroup);
+      return taxiGroup;
+    }
+
+    // --- LAMPADAIRES ---
+    function createStreetLight(x, z, group) {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 5), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+      pole.position.set(x, 2.5, z);
+      group.add(pole);
+
+      const lamp = new THREE.PointLight(0xffaa33, 3.5, 16);
+      lamp.position.set(x, 4.8, z);
+      group.add(lamp);
+    }
+
+    // --- MONDE OUVERT ALIGNÉ PAR GRILLE (AVENUES & RUELLES) ---
+    const CHUNK_SIZE = 60;
+    const worldChunks = new Map();
+
+    function spawnChunkContent(cx, cz) {
+      const key = `${cx},${cz}`;
+      if (worldChunks.has(key)) return;
+
+      const chunkGroup = new THREE.Group();
+      const startX = cx * CHUNK_SIZE;
+      const startZ = cz * CHUNK_SIZE;
+
+      // 1. GOUDRON (Avenue principale au centre & Ruelles perpendiculaires)
+      const roadGeo = new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE);
+      const ground = new THREE.Mesh(roadGeo, asphaltMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.set(startX + CHUNK_SIZE/2, 0, startZ + CHUNK_SIZE/2);
+      chunkGroup.add(ground);
+
+      if (cz > -2) {
+        // 2. TROTTOIRS ET MARQUAGES AU SOL
+        // Avenue principale (Axe X)
+        const mainRoadStrip = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, 14), asphaltMat);
+        mainRoadStrip.rotation.x = -Math.PI / 2;
+        mainRoadStrip.position.set(startX + CHUNK_SIZE/2, 0.01, startZ + CHUNK_SIZE/2);
+        chunkGroup.add(mainRoadStrip);
+
+        // Ligne blanche discontinue au milieu de l'avenue
+        for (let l = 0; l < CHUNK_SIZE; l += 8) {
+          const dash = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.4), whiteLineMat);
+          dash.rotation.x = -Math.PI / 2;
+          dash.position.set(startX + l + 2, 0.02, startZ + CHUNK_SIZE/2);
+          chunkGroup.add(dash);
+        }
+
+        // Trottoirs sur les côtés de l'avenue
+        const sidewalkNorth = new THREE.Mesh(new THREE.BoxGeometry(CHUNK_SIZE, 0.3, 3), sidewalkMat);
+        sidewalkNorth.position.set(startX + CHUNK_SIZE/2, 0.15, startZ + CHUNK_SIZE/2 - 8.5);
+        chunkGroup.add(sidewalkNorth);
+
+        const sidewalkSouth = new THREE.Mesh(new THREE.BoxGeometry(CHUNK_SIZE, 0.3, 3), sidewalkMat);
+        sidewalkSouth.position.set(startX + CHUNK_SIZE/2, 0.15, startZ + CHUNK_SIZE/2 + 8.5);
+        chunkGroup.add(sidewalkSouth);
+
+        // Lampadaires le long des trottoirs
+        createStreetLight(startX + 10, startZ + CHUNK_SIZE/2 - 8.5, chunkGroup);
+        createStreetLight(startX + 40, startZ + CHUNK_SIZE/2 - 8.5, chunkGroup);
+        createStreetLight(startX + 25, startZ + CHUNK_SIZE/2 + 8.5, chunkGroup);
+
+        // 3. MAISONS ET IMMEUBLES PARFAITEMENT ALIGNÉS LE LONG DES RUELLES
+        // Pâté de maisons NORD
+        for (let i = 0; i < 3; i++) {
+          const bx = startX + 8 + i * 18;
+          const bz = startZ + CHUNK_SIZE/2 - 18;
+          const isBuilding = (i === 1); // Un immeuble R+2 au milieu
+
+          const height = isBuilding ? 12 : 5;
+          const depth = 8;
+          const width = 12;
+
+          const buildingMat = new THREE.MeshStandardMaterial({ color: wallColors[i % wallColors.length] });
+          const building = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), buildingMat);
+          building.position.set(bx, height / 2, bz);
+          chunkGroup.add(building);
+
+          // Toit en tôle pour les maisons
+          if (!isBuilding) {
+            const roof = new THREE.Mesh(new THREE.ConeGeometry(9, 2.5, 4), new THREE.MeshStandardMaterial({ color: 0x666666 }));
+            roof.position.set(bx, height + 1.25, bz);
+            roof.rotation.y = Math.PI / 4;
+            chunkGroup.add(roof);
+          }
+
+          collisionBoxes.push({ minX: bx - width/2 - 0.5, maxX: bx + width/2 + 0.5, minZ: bz - depth/2 - 0.5, maxZ: bz + depth/2 + 0.5 });
+        }
+
+        // Pâté de maisons SUD
+        for (let i = 0; i < 3; i++) {
+          const bx = startX + 8 + i * 18;
+          const bz = startZ + CHUNK_SIZE/2 + 18;
+
+          const buildingMat = new THREE.MeshStandardMaterial({ color: wallColors[(i + 2) % wallColors.length] });
+          const building = new THREE.Mesh(new THREE.BoxGeometry(12, 5, 8), buildingMat);
+          building.position.set(bx, 2.5, bz);
+          chunkGroup.add(building);
+
+          collisionBoxes.push({ minX: bx - 6.5, maxX: bx + 6.5, minZ: bz - 4.5, maxZ: bz + 4.5 });
+        }
+
+        // 4. TAXI EN CIRCULATION SUR L'AVENUE
+        const taxi = createTaxi(startX + 10, startZ + CHUNK_SIZE/2 + 3, Math.PI / 2);
+        movingTaxis.push({ mesh: taxi, speed: 0.12, startX: startX, endX: startX + CHUNK_SIZE });
+      }
+
+      scene.add(chunkGroup);
+      worldChunks.set(key, chunkGroup);
+    }
+
+    function updateOpenWorld(playerX, playerZ) {
+      const currentCx = Math.floor(playerX / CHUNK_SIZE);
+      const currentCz = Math.floor(playerZ / CHUNK_SIZE);
+      for (let x = -1; x <= 1; x++) {
+        for (let z = -1; z <= 1; z++) spawnChunkContent(currentCx + x, currentCz + z);
+      }
+    }
+
+    function checkCollision(nextX, nextZ) {
+      for (let box of collisionBoxes) {
+        if (nextX >= box.minX && nextX <= box.maxX && nextZ >= box.minZ && nextZ <= box.maxZ) return true;
+      }
+      return false;
     }
 
     // --- ADOUKUS ---
     const adoukusGroup = new THREE.Group();
     const blueUniformMat = new THREE.MeshStandardMaterial({ color: 0x1040b0 });
-    const highVisMat = new THREE.MeshStandardMaterial({ color: 0xff6600 });
-    const skinMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21 });
-    const helmetMat = new THREE.MeshStandardMaterial({ color: 0xffcc00 });
-
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.9, 0.4), blueUniformMat);
-    torso.position.y = 1.15;
-    adoukusGroup.add(torso);
-
-    const vest = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.4, 0.42), highVisMat);
-    vest.position.y = 1.25;
-    adoukusGroup.add(vest);
-
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), skinMat);
-    head.position.y = 1.8;
-    adoukusGroup.add(head);
-
-    const helmet = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.2, 0.48), helmetMat);
-    helmet.position.y = 2.02;
-    adoukusGroup.add(helmet);
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.9, 0.4), blueUniformMat); torso.position.y = 1.15; adoukusGroup.add(torso);
+    const vest = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.4, 0.42), new THREE.MeshStandardMaterial({ color: 0xff6600 })); vest.position.y = 1.25; adoukusGroup.add(vest);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0x5c3a21 })); head.position.y = 1.8; adoukusGroup.add(head);
+    const helmet = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.2, 0.48), new THREE.MeshStandardMaterial({ color: 0xffcc00 })); helmet.position.y = 2.02; adoukusGroup.add(helmet);
 
     const legGeo = new THREE.BoxGeometry(0.28, 0.7, 0.28);
-    const leftLeg = new THREE.Mesh(legGeo, blueUniformMat);
-    leftLeg.position.set(-0.2, 0.35, 0);
-    adoukusGroup.add(leftLeg);
-
-    const rightLeg = new THREE.Mesh(legGeo, blueUniformMat);
-    rightLeg.position.set(0.2, 0.35, 0);
-    adoukusGroup.add(rightLeg);
-
+    const leftLeg = new THREE.Mesh(legGeo, blueUniformMat); leftLeg.position.set(-0.2, 0.35, 0); adoukusGroup.add(leftLeg);
+    const rightLeg = new THREE.Mesh(legGeo, blueUniformMat); rightLeg.position.set(0.2, 0.35, 0); adoukusGroup.add(rightLeg);
     const armGeo = new THREE.BoxGeometry(0.22, 0.65, 0.22);
-    const leftArm = new THREE.Mesh(armGeo, blueUniformMat);
-    leftArm.position.set(-0.48, 1.15, 0);
-    adoukusGroup.add(leftArm);
-
-    const rightArm = new THREE.Mesh(armGeo, blueUniformMat);
-    rightArm.position.set(0.48, 1.15, 0);
-    adoukusGroup.add(rightArm);
-
+    const leftArm = new THREE.Mesh(armGeo, blueUniformMat); leftArm.position.set(-0.48, 1.15, 0); adoukusGroup.add(leftArm);
+    const rightArm = new THREE.Mesh(armGeo, blueUniformMat); rightArm.position.set(0.48, 1.15, 0); adoukusGroup.add(rightArm);
+    adoukusGroup.position.set(10, 0, 30);
     scene.add(adoukusGroup);
 
-    // --- JOYSTICK ---
-    const joystickContainer = document.getElementById('joystick-container');
-    const joystickKnob = document.getElementById('joystick-knob');
-    let cameraAngleOffset = 0;
-    let isDraggingJoystick = false;
-    let startX = 0;
+    // --- POTEAUX SNE ---
+    let poles = [], sabotagedCount = 0, moneyCount = 0, moveSpeed = 0.16, gameOver = false;
+    let nearbyPole = null, currentBuilding = null;
 
-    joystickContainer.addEventListener('pointerdown', (e) => {
-      isDraggingJoystick = true;
-      startX = e.clientX;
-    });
-
-    window.addEventListener('pointermove', (e) => {
-      if (!isDraggingJoystick) return;
-      const deltaX = e.clientX - startX;
-      cameraAngleOffset += deltaX * 0.005;
-      startX = e.clientX;
-      const knobOffset = Math.max(-25, Math.min(25, deltaX));
-      joystickKnob.style.transform = `translateX(${knobOffset}px)`;
-    });
-
-    window.addEventListener('pointerup', () => {
-      isDraggingJoystick = false;
-      joystickKnob.style.transform = 'translateX(0px)';
-    });
-
-    // --- MECHANIQUES SAUT & HIDE ---
-    let velocityY = 0;
-    let isJumping = false;
-    let isHidden = false;
-
-    function doJump() {
-      if (!isJumping) {
-        velocityY = 0.25;
-        isJumping = true;
-      }
-    }
-
-    function toggleHide() {
-      let inZone = false;
-      hideSpots.forEach(spot => {
-        const d = adoukusGroup.position.distanceTo(new THREE.Vector3(spot.x, 0, spot.z));
-        if (d < 2.0) inZone = true;
+    function setupPoles() {
+      poles.forEach(p => scene.remove(p.group));
+      poles = [];
+      const polePositions = [{ x: 15, z: 21 }, { x: 45, z: 21 }, { x: 25, z: 39 }, { x: -15, z: 21 }, { x: -35, z: 39 }];
+      polePositions.forEach((pos) => {
+        const poleGroup = new THREE.Group();
+        const poleMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 7), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+        poleMesh.position.y = 3.5; poleGroup.add(poleMesh);
+        const light = new THREE.PointLight(0xffbb44, 4.0, 25);
+        light.position.set(0, 6.5, 0); poleGroup.add(light);
+        poleGroup.position.set(pos.x, 0, pos.z);
+        scene.add(poleGroup);
+        poles.push({ group: poleGroup, light: light, active: true, position: new THREE.Vector3(pos.x, 0, pos.z) });
       });
-
-      if (inZone) {
-        isHidden = !isHidden;
-        const statusEl = document.getElementById('stealth-status');
-        statusEl.innerText = isHidden ? 'Caché 🥷' : 'Visible';
-        statusEl.style.color = isHidden ? '#00ffaa' : '#ffffff';
-      }
     }
-
-    // --- GAME LOGIC & COMMANDES ---
-    let gameOver = false;
-    let sabotagedCount = 0;
-    let moneyCount = 0;
-    let angerLevel = 0;
-    let moveSpeed = 0.15;
-    let decoyCount = 0;
-    let activeDecoyPos = null;
-
-    let currentBuilding = null;
-    let nearbyPole = null;
+    setupPoles();
 
     const keys = {};
-    const levelDisplay = document.getElementById('level-name');
-    const countDisplay = document.getElementById('sabotage-count');
-    const moneyDisplay = document.getElementById('money-count');
-    const decoyDisplay = document.getElementById('decoy-count');
-    const angerBar = document.getElementById('anger-bar');
-    const dialogBox = document.getElementById('dialog-box');
-    const shopModal = document.getElementById('shop-modal');
-
-    // Attachement des touches PlayStation
-    document.getElementById('btn-cross').addEventListener('click', doJump);
-    document.getElementById('btn-triangle').addEventListener('click', toggleHide);
-    document.getElementById('btn-square').addEventListener('click', () => useDecoy());
-    document.getElementById('btn-circle').addEventListener('click', () => {
-      if (nearbyPole && !gameOver && dialogBox.style.display !== 'block') {
-        interactWithBuilding();
-      }
-    });
-
-    window.toggleShop = function() {
-      shopModal.style.display = (shopModal.style.display === 'block') ? 'none' : 'block';
-    };
-
-    window.buyItem = function(item, price) {
-      if (moneyCount >= price) {
-        moneyCount -= price;
-        moneyDisplay.innerText = moneyCount;
-        if (item === 'shoes') {
-          moveSpeed = 0.22;
-          alert('👟 Baskets équipées ! Adoukus court plus vite !');
-        } else if (item === 'decoy') {
-          decoyCount++;
-          decoyDisplay.innerText = decoyCount;
-        }
-      } else {
-        alert('Pas assez de FCFA !');
-      }
-    };
-
-    window.useDecoy = function() {
-      if (decoyCount > 0 && !activeDecoyPos) {
-        decoyCount--;
-        decoyDisplay.innerText = decoyCount;
-
-        activeDecoyPos = adoukusGroup.position.clone().add(new THREE.Vector3(-3, 0, -3));
-        const flash = new THREE.PointLight(0xffaa00, 15, 10);
-        flash.position.copy(activeDecoyPos);
-        scene.add(flash);
-
-        setTimeout(() => {
-          scene.remove(flash);
-          activeDecoyPos = null;
-        }, 5000);
-      }
-    };
-
-    window.addEventListener('keydown', (e) => {
-      keys[e.key] = true;
-      if (e.key === ' ' ) doJump();
-      if (e.key === 'Shift' || e.key === 'q' || e.key === 'Q') useDecoy();
-      if (e.key === 'c' || e.key === 'C') toggleHide();
-      if ((e.key === 'e' || e.key === 'E') && nearbyPole && !gameOver && dialogBox.style.display !== 'block') {
-        interactWithBuilding();
-      }
-    });
+    window.addEventListener('keydown', (e) => { keys[e.key] = true; });
     window.addEventListener('keyup', (e) => keys[e.key] = false);
 
-    function interactWithBuilding() {
-      if (!nearbyPole) return;
-      currentBuilding = nearbyPole;
-      dialogBox.style.display = 'block';
-    }
+    document.getElementById('btn-circle').addEventListener('click', () => {
+      if (nearbyPole && !gameOver) { currentBuilding = nearbyPole; document.getElementById('dialog-box').style.display = 'block'; }
+    });
 
-    window.resolveBill = function(cutThePower) {
-      dialogBox.style.display = 'none';
+    window.resolveBill = function(cut) {
+      document.getElementById('dialog-box').style.display = 'none';
       if (!currentBuilding) return;
-
       moneyCount += 5000;
-      moneyDisplay.innerText = moneyCount;
-
-      if (cutThePower) {
-        currentBuilding.active = false;
-        currentBuilding.light.intensity = 0;
+      document.getElementById('money-count').innerText = moneyCount;
+      if (cut) {
+        currentBuilding.active = false; currentBuilding.light.intensity = 0;
         sabotagedCount++;
-        countDisplay.innerText = sabotagedCount;
-        angerLevel += 35;
-
-        const flash = new THREE.PointLight(0xff0000, 20, 15);
-        flash.position.copy(currentBuilding.position).add(new THREE.Vector3(0, 3, 0));
-        scene.add(flash);
-        setTimeout(() => scene.remove(flash), 200);
-
-        spawnAngryCitizen(currentBuilding.position);
-        spawnAngryCitizen(currentBuilding.position);
-      } else {
-        currentBuilding.active = false;
-        angerLevel += 5;
-      }
-
-      angerBar.style.width = Math.min(100, angerLevel) + '%';
-
-      // Défaite par Colère
-      if (angerLevel >= 100) {
-        gameOver = true;
-        document.getElementById('game-overlay-lose').style.display = 'flex';
-        return;
-      }
-
-      // Gestion du Niveau Suivant
-      if (sabotagedCount >= LEVELS[currentLevelIndex].countToWin) {
-        gameOver = true;
-        if (currentLevelIndex < LEVELS.length - 1) {
-          document.getElementById('game-overlay-next').style.display = 'flex';
-        } else {
-          document.getElementById('game-overlay-win').style.display = 'flex';
-        }
+        document.getElementById('sabotage-count').innerText = sabotagedCount;
       }
     };
 
-    // Transition au niveau suivant
-    window.startNextLevel = function() {
-      document.getElementById('game-overlay-next').style.display = 'none';
-      currentLevelIndex++;
-      levelDisplay.innerText = LEVELS[currentLevelIndex].name;
-      
-      sabotagedCount = 0;
-      angerLevel = 0;
-      countDisplay.innerText = sabotagedCount;
-      angerBar.style.width = '0%';
-      
-      adoukusGroup.position.set(0, 0, 0);
-      clearCrowd();
-      setupPoles();
-      gameOver = false;
-    };
-
-    // --- DESSIN MINI-RADAR 2D ---
-    const radarCanvas = document.getElementById('radar-canvas');
-    const radarCtx = radarCanvas.getContext('2d');
-    const RADAR_SCALE = 1.2;
-
-    function drawRadar() {
-      radarCtx.clearRect(0, 0, 130, 130);
-      const cx = 65;
-      const cy = 65;
-
-      poles.forEach(p => {
-        const rx = cx + (p.position.x - adoukusGroup.position.x) * RADAR_SCALE;
-        const ry = cy + (p.position.z - adoukusGroup.position.z) * RADAR_SCALE;
-        radarCtx.fillStyle = p.active ? '#00ff55' : '#555555';
-        radarCtx.beginPath();
-        radarCtx.arc(rx, ry, 4, 0, Math.PI * 2);
-        radarCtx.fill();
-      });
-
-      hideSpots.forEach(s => {
-        const rx = cx + (s.x - adoukusGroup.position.x) * RADAR_SCALE;
-        const ry = cy + (s.z - adoukusGroup.position.z) * RADAR_SCALE;
-        radarCtx.fillStyle = '#00ccff';
-        radarCtx.beginPath();
-        radarCtx.arc(rx, ry, 3, 0, Math.PI * 2);
-        radarCtx.fill();
-      });
-
-      angryCrowd.forEach(c => {
-        const rx = cx + (c.mesh.position.x - adoukusGroup.position.x) * RADAR_SCALE;
-        const ry = cy + (c.mesh.position.z - adoukusGroup.position.z) * RADAR_SCALE;
-        radarCtx.fillStyle = '#ff2200';
-        radarCtx.beginPath();
-        radarCtx.arc(rx, ry, 3, 0, Math.PI * 2);
-        radarCtx.fill();
-      });
-
-      radarCtx.fillStyle = '#ffcc00';
-      radarCtx.beginPath();
-      radarCtx.arc(cx, cy, 5, 0, Math.PI * 2);
-      radarCtx.fill();
-    }
-
-    const tempV = new THREE.Vector3();
-    function updateBubblePosition(citizen) {
-      tempV.copy(citizen.mesh.position).add(new THREE.Vector3(0, 2.2, 0));
-      tempV.project(camera);
-      const x = (tempV.x * .5 + .5) * window.innerWidth;
-      const y = (-(tempV.y * .5) + .5) * window.innerHeight;
-      citizen.bubble.style.left = `${x}px`;
-      citizen.bubble.style.top = `${y}px`;
-      citizen.bubble.style.display = (tempV.z < 1 && !isHidden) ? 'block' : 'none';
-    }
-
-    // --- ANIMATION LOOP ---
+    // --- BOUCLE PRINCIPALE ---
     const clock = new THREE.Clock();
     function animate() {
       requestAnimationFrame(animate);
-      if (gameOver || dialogBox.style.display === 'block' || shopModal.style.display === 'block') return;
+      if (gameOver) return;
 
       const time = clock.getElapsedTime();
 
-      if (isJumping) {
-        adoukusGroup.position.y += velocityY;
-        velocityY -= 0.015;
-        if (adoukusGroup.position.y <= 0) {
-          adoukusGroup.position.y = 0;
-          isJumping = false;
-        }
-      }
+      // Déplacement continu des Taxis sur les grandes avenues
+      movingTaxis.forEach(t => {
+        t.mesh.position.x += t.speed;
+        if (t.mesh.position.x > t.endX) t.mesh.position.x = t.startX;
+      });
 
-      let moveX = 0;
-      let moveZ = 0;
-
+      // Déplacement d'Adoukus
+      let moveX = 0, moveZ = 0;
       if (keys.z || keys.Z || keys.ArrowUp) moveZ -= 1;
       if (keys.s || keys.S || keys.ArrowDown) moveZ += 1;
       if (keys.q || keys.Q || keys.ArrowLeft) moveX -= 1;
@@ -824,67 +362,32 @@
 
       if (moveX !== 0 || moveZ !== 0) {
         const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
-        adoukusGroup.position.x += (moveX / len) * moveSpeed;
-        adoukusGroup.position.z += (moveZ / len) * moveSpeed;
+        const nextX = adoukusGroup.position.x + (moveX / len) * moveSpeed;
+        const nextZ = adoukusGroup.position.z + (moveZ / len) * moveSpeed;
+
+        if (!checkCollision(nextX, nextZ)) {
+          adoukusGroup.position.x = nextX;
+          adoukusGroup.position.z = nextZ;
+        }
         adoukusGroup.rotation.y = Math.atan2(moveX, moveZ);
 
-        leftLeg.rotation.x = Math.sin(time * 12) * 0.6;
-        rightLeg.rotation.x = -Math.sin(time * 12) * 0.6;
-        leftArm.rotation.x = -Math.sin(time * 12) * 0.6;
-        rightArm.rotation.x = Math.sin(time * 12) * 0.6;
-      } else {
-        leftLeg.rotation.x = 0;
-        rightLeg.rotation.x = 0;
-        leftArm.rotation.x = 0;
-        rightArm.rotation.x = 0;
+        leftLeg.rotation.x = Math.sin(time * 12) * 0.6; rightLeg.rotation.x = -Math.sin(time * 12) * 0.6;
+        leftArm.rotation.x = -Math.sin(time * 12) * 0.6; rightArm.rotation.x = Math.sin(time * 12) * 0.6;
       }
 
-      const targetPos = activeDecoyPos || (isHidden ? null : adoukusGroup.position);
-
-      angryCrowd.forEach((citizen) => {
-        if (targetPos) {
-          const dir = new THREE.Vector3().subVectors(targetPos, citizen.mesh.position);
-          dir.y = 0;
-          const dist = dir.length();
-
-          if (dist > 0.6) {
-            dir.normalize();
-            citizen.mesh.position.addScaledVector(dir, citizen.speed);
-            citizen.mesh.rotation.y = Math.atan2(dir.x, dir.z);
-          }
-
-          if (!activeDecoyPos && !isHidden && citizen.mesh.position.distanceTo(adoukusGroup.position) < 1.0) {
-            gameOver = true;
-            document.getElementById('game-overlay-lose').style.display = 'flex';
-          }
-        }
-        updateBubblePosition(citizen);
-      });
+      updateOpenWorld(adoukusGroup.position.x, adoukusGroup.position.z);
 
       nearbyPole = null;
-      poles.forEach(pole => {
-        if (pole.active && adoukusGroup.position.distanceTo(pole.position) < 3.5) {
-          nearbyPole = pole;
-        }
-      });
+      poles.forEach(pole => { if (pole.active && adoukusGroup.position.distanceTo(pole.position) < 3.5) nearbyPole = pole; });
 
-      drawRadar();
-
-      const camDist = 10;
-      camera.position.x = adoukusGroup.position.x + Math.sin(cameraAngleOffset) * camDist;
-      camera.position.z = adoukusGroup.position.z + Math.cos(cameraAngleOffset) * camDist;
-      camera.position.y = adoukusGroup.position.y + 6;
+      camera.position.x = adoukusGroup.position.x;
+      camera.position.z = adoukusGroup.position.z + 14;
+      camera.position.y = adoukusGroup.position.y + 8;
       camera.lookAt(adoukusGroup.position.x, adoukusGroup.position.y + 1, adoukusGroup.position.z);
 
       renderer.render(scene, camera);
     }
     animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
   </script>
 </body>
 </html>
