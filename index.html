@@ -1,490 +1,592 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BLACK-OUT WARS 242 - Quartier Équilibré</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black-Out Wars 242</title>
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        touch-action: none;
-      }
-      body,
-      html {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background-color: #2b2218;
-        font-family: sans-serif;
-        user-select: none;
-      }
-      #canvas-container {
-        width: 100vw;
-        height: 100vh;
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
-
-      #ui-hud {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        color: #fff;
-        font-family: monospace;
-        font-size: 13px;
-        background: rgba(20, 15, 10, 0.85);
-        padding: 12px 18px;
-        border-radius: 8px;
-        border: 1px solid rgba(255, 165, 0, 0.6);
-        z-index: 100;
-        pointer-events: none;
-      }
-      #ui-hud h1 {
-        font-size: 15px;
-        color: #ffaa00;
-        margin-bottom: 4px;
-        text-transform: uppercase;
-      }
-
-      #dpad-container {
-        position: fixed;
-        bottom: 30px;
-        left: 30px;
-        width: 140px;
-        height: 140px;
-        z-index: 999;
-      }
-      .d-btn {
-        position: absolute;
-        width: 44px;
-        height: 44px;
-        background: rgba(0, 0, 0, 0.5);
-        border: 2px solid rgba(255, 255, 255, 0.6);
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        cursor: pointer;
-      }
-      .d-btn:active {
-        background: rgba(255, 170, 0, 0.8);
-      }
-      #btn-up {
-        top: 0;
-        left: 48px;
-      }
-      #btn-down {
-        bottom: 0;
-        left: 48px;
-      }
-      #btn-left {
-        top: 48px;
-        left: 0;
-      }
-      #btn-right {
-        top: 48px;
-        right: 0;
-      }
-
-      #action-container {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        display: flex;
-        gap: 15px;
-        align-items: flex-end;
-        z-index: 999;
-      }
-      .act-btn {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        color: white;
-        font-weight: bold;
-        font-size: 11px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        text-transform: uppercase;
-      }
-      .act-btn:active {
-        transform: scale(0.92);
-      }
-      #btn-run {
-        background: rgba(0, 150, 255, 0.7);
-        border: 2px solid #00aaff;
-      }
-      #btn-jump {
-        background: rgba(40, 180, 40, 0.7);
-        border: 2px solid #00ff66;
-      }
-      #btn-sabotage {
-        background: rgba(220, 50, 50, 0.85);
-        border: 2px solid #ff4444;
-        width: 75px;
-        height: 75px;
-        font-size: 12px;
-      }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050505;
+        }
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            pointer-events: none;
+            font-size: 14px;
+            border-left: 4px solid #e74c3c;
+        }
+        #message {
+            margin-top: 5px;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+        #flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s ease-out;
+        }
     </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  </head>
-  <body>
-    <div id="ui-hud">
-      <h1>BLACK-OUT WARS 242</h1>
-      <p>Quartier : <span id="level-name">Bacongo (Avenue Animée)</span></p>
-      <p>
-        Action : <span id="action-status" style="color: #00ffaa">Libre</span>
-      </p>
-    </div>
-
-    <div id="dpad-container">
-      <div class="d-btn" id="btn-up">▲</div>
-      <div class="d-btn" id="btn-down">▼</div>
-      <div class="d-btn" id="btn-left">◄</div>
-      <div class="d-btn" id="btn-right">►</div>
-    </div>
-
-    <div id="action-container">
-      <div class="act-btn" id="btn-run">Courir</div>
-      <div class="act-btn" id="btn-jump">Sauter</div>
-      <div class="act-btn" id="btn-sabotage">⚡ Couper</div>
-    </div>
-
-    <div id="canvas-container"></div>
-
-    <script>
-      const container = document.getElementById("canvas-container");
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xd4a373);
-      scene.fog = new THREE.FogExp2(0xd4a373, 0.003);
-
-      const camera = new THREE.PerspectiveCamera(
-        55,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
-      container.appendChild(renderer.domElement);
-
-      scene.add(new THREE.AmbientLight(0xffeedd, 1.2));
-      const sun = new THREE.DirectionalLight(0xfffaed, 1.0);
-      sun.position.set(50, 100, 50);
-      sun.castShadow = true;
-      scene.add(sun);
-
-      // TERRAIN & ROUTE
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(600, 600),
-        new THREE.MeshStandardMaterial({ color: 0x4a3525, roughness: 0.95 })
-      );
-      ground.rotation.x = -Math.PI / 2;
-      ground.receiveShadow = true;
-      scene.add(ground);
-
-      const mainRoad = new THREE.Mesh(
-        new THREE.PlaneGeometry(16, 600),
-        new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.8 })
-      );
-      mainRoad.rotation.x = -Math.PI / 2;
-      mainRoad.position.y = 0.01;
-      mainRoad.receiveShadow = true;
-      scene.add(mainRoad);
-
-      // Lignes jaunes de l'avenue
-      for (let z = -280; z <= 280; z += 14) {
-        const line = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.4, 7),
-          new THREE.MeshBasicMaterial({ color: 0xffcc00 })
-        );
-        line.rotation.x = -Math.PI / 2;
-        line.position.set(0, 0.02, z);
-        scene.add(line);
-      }
-
-      const gltfLoader = new THREE.GLTFLoader();
-
-      function tryLoadGLTF(paths, onSuccess) {
-        if (!paths || paths.length === 0) return;
-        const path = paths.shift();
-        gltfLoader.load(
-          path,
-          (gltf) => {
-            onSuccess(gltf);
-          },
-          undefined,
-          () => {
-            tryLoadGLTF(paths, onSuccess);
-          }
-        );
-      }
-
-      function setupShadows(model) {
-        model.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-          }
-        });
-      }
-
-      // 1. VRIS IMMEUBLES (Taille agrandie à 1.8)
-      tryLoadGLTF(
-        ["src/Big Building.glb", "src/BigBuilding.glb", "src/building.glb"],
-        (gltf) => {
-          const baseBuilding = gltf.scene;
-
-          let index = 0;
-          for (let z = -240; z <= 240; z += 45) {
-            const scaleH = 1.6 + (index % 3) * 0.4;
-            const scaleW = 1.6 + ((index * 7) % 3) * 0.3;
-
-            // Côté Gauche
-            const bLeft = baseBuilding.clone();
-            bLeft.scale.set(scaleW, scaleH, scaleW);
-            bLeft.position.set(-28, 0, z);
-            bLeft.rotation.y = Math.PI / 2;
-            setupShadows(bLeft);
-            scene.add(bLeft);
-
-            // Côté Droit
-            const bRight = baseBuilding.clone();
-            bRight.scale.set(scaleW, scaleH, scaleW);
-            bRight.position.set(28, 0, z + 20);
-            bRight.rotation.y = -Math.PI / 2;
-            setupShadows(bRight);
-            scene.add(bRight);
-
-            index++;
-          }
-        }
-      );
-
-      // 2. ARBRES TAILLE NORMALE (Échelle ultra-réduite à 0.003)
-      tryLoadGLTF(["src/Tree.glb", "src/tree.glb"], (gltf) => {
-        const baseTree = gltf.scene;
-        for (let z = -220; z <= 220; z += 40) {
-          const t1 = baseTree.clone();
-          t1.scale.set(0.003, 0.003, 0.003); // Échelle corrigée
-          t1.position.set(-14, 0, z);
-          setupShadows(t1);
-          scene.add(t1);
-
-          const t2 = baseTree.clone();
-          t2.scale.set(0.003, 0.003, 0.003);
-          t2.position.set(14, 0, z + 20);
-          setupShadows(t2);
-          scene.add(t2);
-        }
-      });
-
-      // 3. ARRÊT DE BUS ET VOITURE (Ajustés à la bonne échelle)
-      tryLoadGLTF(["src/busstop.glb", "src/Bus stop sign.glb"], (gltf) => {
-        const model = gltf.scene;
-        model.scale.set(0.003, 0.003, 0.003);
-        model.position.set(-10, 0, -10);
-        model.rotation.y = Math.PI / 2;
-        setupShadows(model);
-        scene.add(model);
-      });
-
-      tryLoadGLTF(["src/car.glb", "src/Sports Car.glb"], (gltf) => {
-        const model = gltf.scene;
-        model.scale.set(0.003, 0.003, 0.003);
-        model.position.set(10, 0, 20);
-        model.rotation.y = 0.1;
-        setupShadows(model);
-        scene.add(model);
-      });
-
-      // 4. CHARGEMENT ADOUKUS
-      let adoukusModel = null;
-      let mixer = null;
-      let walkAction = null;
-      const clock = new THREE.Clock();
-
-      const fbxLoader = new THREE.FBXLoader();
-      fbxLoader.load("src/adoukus.fbx", (object) => {
-        adoukusModel = object;
-        adoukusModel.scale.set(0.01, 0.01, 0.01);
-        adoukusModel.position.set(0, 0, 10);
-        setupShadows(adoukusModel);
-        scene.add(adoukusModel);
-
-        if (object.animations && object.animations.length > 0) {
-          mixer = new THREE.AnimationMixer(adoukusModel);
-          walkAction = mixer.clipAction(object.animations[0]);
-          walkAction.play();
-          walkAction.paused = true;
-        }
-      });
-
-      // CONTROLES ET ANIMAION
-      let isRunning = false;
-      let isJumping = false;
-      let verticalVelocity = 0;
-      const gravity = -0.015;
-      const moveInput = { up: false, down: false, left: false, right: false };
-
-      function bindBtn(id, keyProp) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const start = (e) => {
-          e.preventDefault();
-          moveInput[keyProp] = true;
-        };
-        const end = (e) => {
-          e.preventDefault();
-          moveInput[keyProp] = false;
-        };
-        el.addEventListener("touchstart", start);
-        el.addEventListener("touchend", end);
-        el.addEventListener("mousedown", start);
-        el.addEventListener("mouseup", end);
-      }
-
-      bindBtn("btn-up", "up");
-      bindBtn("btn-down", "down");
-      bindBtn("btn-left", "left");
-      bindBtn("btn-right", "right");
-
-      window.addEventListener("keydown", (e) => {
-        const k = e.key.toLowerCase();
-        if (k === "z" || k === "arrowup") moveInput.up = true;
-        if (k === "s" || k === "arrowdown") moveInput.down = true;
-        if (k === "q" || k === "arrowleft") moveInput.left = true;
-        if (k === "d" || k === "arrowright") moveInput.right = true;
-        if (k === "shift") isRunning = true;
-        if (k === " " && !isJumping) triggerJump();
-        if (k === "e") triggerSabotage();
-      });
-
-      window.addEventListener("keyup", (e) => {
-        const k = e.key.toLowerCase();
-        if (k === "z" || k === "arrowup") moveInput.up = false;
-        if (k === "s" || k === "arrowdown") moveInput.down = false;
-        if (k === "q" || k === "arrowleft") moveInput.left = false;
-        if (k === "d" || k === "arrowright") moveInput.right = false;
-        if (k === "shift") isRunning = false;
-      });
-
-      const btnRun = document.getElementById("btn-run");
-      btnRun.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        isRunning = !isRunning;
-      });
-      btnRun.addEventListener("click", () => {
-        isRunning = !isRunning;
-      });
-
-      document
-        .getElementById("btn-jump")
-        .addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          triggerJump();
-        });
-      document
-        .getElementById("btn-jump")
-        .addEventListener("click", triggerJump);
-
-      document
-        .getElementById("btn-sabotage")
-        .addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          triggerSabotage();
-        });
-      document
-        .getElementById("btn-sabotage")
-        .addEventListener("click", triggerSabotage);
-
-      function triggerJump() {
-        if (!isJumping && adoukusModel) {
-          isJumping = true;
-          verticalVelocity = 0.35;
+    <!-- Importation de Three.js et des Chargeurs (FBX & GLTF) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
       }
-
-      function triggerSabotage() {
-        const statusEl = document.getElementById("action-status");
-        statusEl.innerText = "⚡ Coupure en cours !";
-        statusEl.style.color = "#ff4444";
-        setTimeout(() => {
-          statusEl.innerText = "Libre";
-          statusEl.style.color = "#00ffaa";
-        }, 1500);
-      }
-
-      function animate() {
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-
-        if (adoukusModel) {
-          let moveX = 0,
-            moveZ = 0;
-          if (moveInput.up) moveZ -= 1;
-          if (moveInput.down) moveZ += 1;
-          if (moveInput.left) moveX -= 1;
-          if (moveInput.right) moveX += 1;
-
-          const isMoving = moveX !== 0 || moveZ !== 0;
-
-          if (walkAction) {
-            walkAction.paused = !isMoving;
-            walkAction.timeScale = isRunning ? 1.8 : 1.0;
-          }
-          if (mixer) mixer.update(delta);
-
-          const baseSpeed = isRunning ? 0.28 : 0.14;
-
-          if (isMoving) {
-            const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
-            adoukusModel.position.x += (moveX / len) * baseSpeed;
-            adoukusModel.position.z += (moveZ / len) * baseSpeed;
-            adoukusModel.rotation.y = Math.atan2(moveX, moveZ);
-          }
-
-          if (isJumping) {
-            adoukusModel.position.y += verticalVelocity;
-            verticalVelocity += gravity;
-            if (adoukusModel.position.y <= 0) {
-              adoukusModel.position.y = 0;
-              isJumping = false;
-            }
-          }
-
-          camera.position.x = adoukusModel.position.x;
-          camera.position.z = adoukusModel.position.z + 10;
-          camera.position.y = adoukusModel.position.y + 4.5;
-          camera.lookAt(
-            adoukusModel.position.x,
-            adoukusModel.position.y + 1,
-            adoukusModel.position.z
-          );
-        }
-
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
     </script>
-  </body>
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="flash-overlay"></div>
+    <div id="ui">
+        <div>Déplacement : Flèches ou ZQSD | Approchez-vous d'un transformateur et appuyez sur **E** !</div>
+        <div id="message">Quartiers plongés dans le noir : 0 / 4</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        class GameV2 {
+            constructor() {
+                this.colliders = [];
+                this.movingVehicles = [];
+                this.pedestrians = [];
+                this.transformers = [];
+                this.sparks = [];
+                this.blackoutCount = 0;
+                
+                this.clock = new THREE.Clock();
+                this.mixers = [];
+
+                this.initScene();
+                this.initLighting();
+                this.initCity();
+                this.initUrbanDetails();
+                this.initTraffic();
+                
+                this.initPlayerModel();
+                this.initPedestrianModels();
+
+                this.initListeners();
+                
+                this.animate = this.animate.bind(this);
+                window.requestAnimationFrame(this.animate);
+            }
+
+            initScene() {
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x111115);
+
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true;
+                document.getElementById('game-container').appendChild(this.renderer.domElement);
+            }
+
+            initLighting() {
+                this.ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(this.ambientLight);
+
+                this.dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                this.dirLight.position.set(30, 40, 30);
+                this.dirLight.castShadow = true;
+                this.dirLight.shadow.mapSize.width = 2048;
+                this.dirLight.shadow.mapSize.height = 2048;
+                this.scene.add(this.dirLight);
+
+                const planeGeo = new THREE.PlaneGeometry(200, 200);
+                const planeMat = new THREE.MeshStandardMaterial({ color: 0x1f1f22 });
+                const plane = new THREE.Mesh(planeGeo, planeMat);
+                plane.rotation.x = -Math.PI / 2;
+                plane.receiveShadow = true;
+                this.scene.add(plane);
+            }
+
+            initCity() {
+                const road1Geo = new THREE.PlaneGeometry(12, 200);
+                const roadMat = new THREE.MeshStandardMaterial({ color: 0x111113 });
+                const road1 = new THREE.Mesh(road1Geo, roadMat);
+                road1.rotation.x = -Math.PI / 2;
+                road1.position.y = 0.01;
+                road1.receiveShadow = true;
+                this.scene.add(road1);
+
+                const road2Geo = new THREE.PlaneGeometry(200, 12);
+                const road2 = new THREE.Mesh(road2Geo, roadMat);
+                road2.rotation.x = -Math.PI / 2;
+                road2.position.y = 0.01;
+                road2.receiveShadow = true;
+                this.scene.add(road2);
+
+                const buildingColors = [0x3a3f47, 0x4a515d, 0x2b3038, 0x5a4d41, 0x3d4839];
+
+                const createBuildingBlock = (minX, maxX, minZ, maxZ) => {
+                    for (let x = minX; x <= maxX; x += 15) {
+                        for (let z = minZ; z <= maxZ; z += 15) {
+                            const width = 8 + Math.random() * 3;
+                            const height = 5 + Math.random() * 10;
+                            const depth = 8 + Math.random() * 3;
+
+                            const geo = new THREE.BoxGeometry(width, height, depth);
+                            const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
+                            const mat = new THREE.MeshStandardMaterial({ color: color });
+
+                            const building = new THREE.Mesh(geo, mat);
+                            building.position.set(x, height / 2, z);
+                            building.castShadow = true;
+                            building.receiveShadow = true;
+
+                            this.scene.add(building);
+
+                            const box = new THREE.Box3().setFromObject(building);
+                            this.colliders.push(box);
+                        }
+                    }
+                };
+
+                createBuildingBlock(-80, -15, -80, -15);
+                createBuildingBlock(15, 80, -80, -15);
+                createBuildingBlock(-80, -15, 15, 80);
+                createBuildingBlock(15, 80, 15, 80);
+            }
+
+            createTaxiMesh() {
+                const taxiGroup = new THREE.Group();
+
+                const bottomGeo = new THREE.BoxGeometry(1.8, 0.6, 3.6);
+                const greenMat = new THREE.MeshStandardMaterial({ color: 0x008751 });
+                const bottomMesh = new THREE.Mesh(bottomGeo, greenMat);
+                bottomMesh.position.y = 0.4;
+                bottomMesh.castShadow = true;
+                taxiGroup.add(bottomMesh);
+
+                const topGeo = new THREE.BoxGeometry(1.6, 0.5, 2.0);
+                const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const topMesh = new THREE.Mesh(topGeo, whiteMat);
+                topMesh.position.set(0, 0.95, -0.2);
+                topMesh.castShadow = true;
+                taxiGroup.add(topMesh);
+
+                const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
+                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+                wheelGeo.rotateZ(Math.PI / 2);
+
+                const wheelPositions = [
+                    [-0.9, 0.3, 1.0], [0.9, 0.3, 1.0],
+                    [-0.9, 0.3, -1.0], [0.9, 0.3, -1.0]
+                ];
+
+                wheelPositions.forEach(pos => {
+                    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                    wheel.position.set(...pos);
+                    taxiGroup.add(wheel);
+                });
+
+                return taxiGroup;
+            }
+
+            initUrbanDetails() {
+                const taxi1 = this.createTaxiMesh();
+                taxi1.position.set(-5, -25, 0);
+                this.scene.add(taxi1);
+                this.colliders.push(new THREE.Box3().setFromObject(taxi1));
+
+                const taxi2 = this.createTaxiMesh();
+                taxi2.position.set(5, 30, Math.PI);
+                this.scene.add(taxi2);
+                this.colliders.push(new THREE.Box3().setFromObject(taxi2));
+
+                this.lamps = [];
+                const lampPositions = [
+                    [-7, -7], [7, -7], [-7, 7], [7, 7],
+                    [-7, -40], [7, -40], [-7, 40], [7, 40],
+                    [-40, -7], [40, -7], [-40, 7], [40, 7]
+                ];
+
+                lampPositions.forEach(([x, z]) => {
+                    const poleGeo = new THREE.CylinderGeometry(0.08, 0.08, 5);
+                    const poleMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                    const pole = new THREE.Mesh(poleGeo, poleMat);
+                    pole.position.set(x, 2.5, z);
+                    pole.castShadow = true;
+                    this.scene.add(pole);
+
+                    const lampGeo = new THREE.BoxGeometry(0.4, 0.15, 0.4);
+                    const lampMat = new THREE.MeshStandardMaterial({ color: 0xffea85, emissive: 0xffea85, emissiveIntensity: 0.8 });
+                    const lamp = new THREE.Mesh(lampGeo, lampMat);
+                    lamp.position.set(x, 5, z);
+                    this.scene.add(lamp);
+                    this.lamps.push(lamp);
+                });
+
+                const transformerPositions = [
+                    { x: -20, z: -20, name: "Quartier Nord-Ouest" },
+                    { x: 20, z: -20, name: "Quartier Nord-Est" },
+                    { x: -20, z: 20, name: "Quartier Sud-Ouest" },
+                    { x: 20, z: 20, name: "Quartier Sud-Est" }
+                ];
+
+                transformerPositions.forEach(pos => {
+                    const group = new THREE.Group();
+
+                    const boxGeo = new THREE.BoxGeometry(1.2, 1.8, 1.2);
+                    const boxMat = new THREE.MeshStandardMaterial({ color: 0x7f8c8d });
+                    const boxMesh = new THREE.Mesh(boxGeo, boxMat);
+                    boxMesh.position.y = 0.9;
+                    boxMesh.castShadow = true;
+                    group.add(boxMesh);
+
+                    const lightGeo = new THREE.SphereGeometry(0.2, 16, 16);
+                    const lightMat = new THREE.MeshStandardMaterial({ color: 0x2ecc71, emissive: 0x2ecc71, emissiveIntensity: 1 });
+                    const lightMesh = new THREE.Mesh(lightGeo, lightMat);
+                    lightMesh.position.set(0, 1.8, 0.61);
+                    group.add(lightMesh);
+
+                    group.position.set(pos.x, 0, pos.z);
+                    this.scene.add(group);
+
+                    this.transformers.push({
+                        mesh: group,
+                        light: lightMat,
+                        position: new THREE.Vector3(pos.x, 0, pos.z),
+                        name: pos.name,
+                        sabotaged: false
+                    });
+                });
+            }
+
+            initTraffic() {
+                const trafficConfig = [
+                    { x: -3, z: -90, dirX: 0, dirZ: 1, rot: 0, speed: 0.12 },
+                    { x: 3, z: 90, dirX: 0, dirZ: -1, rot: Math.PI, speed: 0.14 },
+                    { x: -90, z: 3, dirX: 1, dirZ: 0, rot: Math.PI / 2, speed: 0.13 },
+                    { x: 90, z: -3, dirX: -1, dirZ: 0, rot: -Math.PI / 2, speed: 0.11 }
+                ];
+
+                trafficConfig.forEach(cfg => {
+                    const taxi = this.createTaxiMesh();
+                    taxi.position.set(cfg.x, 0, cfg.z);
+                    taxi.rotation.y = cfg.rot;
+                    this.scene.add(taxi);
+
+                    this.movingVehicles.push({
+                        mesh: taxi,
+                        dirX: cfg.dirX,
+                        dirZ: cfg.dirZ,
+                        speed: cfg.speed
+                    });
+                });
+            }
+
+            initPlayerModel() {
+                this.playerSpeed = 0.18;
+                this.playerRadius = 0.5;
+                this.keys = {};
+
+                this.player = new THREE.Group();
+                this.player.position.set(0, 0, 0);
+                this.scene.add(this.player);
+
+                // Fallback géométrique temporaire
+                const tempGeo = new THREE.CapsuleGeometry(0.5, 1.5, 4, 8);
+                const tempMat = new THREE.MeshStandardMaterial({ color: 0x2e3e50 });
+                this.tempPlayerMesh = new THREE.Mesh(tempGeo, tempMat);
+                this.tempPlayerMesh.position.y = 1;
+                this.player.add(this.tempPlayerMesh);
+
+                // Chargement de adoukus.fbx (vérifiez l'extension exacte en minuscules/majuscules si besoin)
+                const fbxLoader = new FBXLoader();
+                fbxLoader.load('adoukus.fbx', (object) => {
+                    this.player.remove(this.tempPlayerMesh);
+                    
+                    object.scale.set(0.01, 0.01, 0.01);
+                    object.traverse(child => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    this.player.add(object);
+
+                    this.playerAnimator = new THREE.AnimationMixer(object);
+                    this.mixers.push(this.playerAnimator);
+
+                    if (object.animations && object.animations.length > 0) {
+                        this.walkAction = this.playerAnimator.clipAction(object.animations[0]);
+                        this.walkAction.play();
+                    }
+
+                    // Chargement de Running.fbx
+                    fbxLoader.load('Running.fbx', (runObj) => {
+                        if (runObj.animations && runObj.animations.length > 0) {
+                            this.runAction = this.playerAnimator.clipAction(runObj.animations[0]);
+                        }
+                    });
+                }, undefined, (error) => {
+                    console.log("Chargement FBX en cours ou fichier introuvable, utilisation du fallback.", error);
+                });
+            }
+
+            initPedestrianModels() {
+                const gltfloader = new GLTFLoader();
+
+                const pedConfigs = [
+                    { file: 'Man.glb', x: -7, z: -50, minZ: -70, maxZ: -10, dirZ: 0.05 },
+                    { file: 'Animated Woman.glb', x: 7, z: 10, minZ: 10, maxZ: 70, dirZ: -0.05 }
+                ];
+
+                pedConfigs.forEach(cfg => {
+                    const pedGroup = new THREE.Group();
+                    pedGroup.position.set(cfg.x, 0, cfg.z);
+                    this.scene.add(pedGroup);
+
+                    const fallbackGeo = new THREE.CapsuleGeometry(0.3, 1.0, 4, 8);
+                    const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xe67e22 });
+                    const fallbackMesh = new THREE.Mesh(fallbackGeo, fallbackMat);
+                    fallbackMesh.position.y = 0.8;
+                    pedGroup.add(fallbackMesh);
+
+                    gltfloader.load(cfg.file, (gltf) => {
+                        pedGroup.remove(fallbackMesh);
+                        const model = gltf.scene;
+                        model.scale.set(1, 1, 1);
+                        model.traverse(child => {
+                            if (child.isMesh) {
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                            }
+                        });
+                        pedGroup.add(model);
+
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            const mixer = new THREE.AnimationMixer(model);
+                            const action = mixer.clipAction(gltf.animations[0]);
+                            action.play();
+                            this.mixers.push(mixer);
+                        }
+                    }, undefined, (err) => {
+                        console.log(`Modèle ${cfg.file} en attente, affichage du fallback.`, err);
+                    });
+
+                    this.pedestrians.push({
+                        mesh: pedGroup,
+                        minZ: cfg.minZ,
+                        maxZ: cfg.maxZ,
+                        dirZ: cfg.dirZ
+                    });
+                });
+            }
+
+            initListeners() {
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    if (e.key.toLowerCase() === 'e') {
+                        this.trySabotage();
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+
+                window.addEventListener('resize', () => {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            updateTraffic() {
+                this.movingVehicles.forEach(vehicle => {
+                    vehicle.mesh.position.x += vehicle.dirX * vehicle.speed;
+                    vehicle.mesh.position.z += vehicle.dirZ * vehicle.speed;
+
+                    if (vehicle.mesh.position.z > 100) vehicle.mesh.position.z = -100;
+                    if (vehicle.mesh.position.z < -100) vehicle.mesh.position.z = 100;
+                    if (vehicle.mesh.position.x > 100) vehicle.mesh.position.x = -100;
+                    if (vehicle.mesh.position.x < -100) vehicle.mesh.position.x = 100;
+                });
+            }
+
+            updatePedestrians() {
+                this.pedestrians.forEach(ped => {
+                    ped.mesh.position.z += ped.dirZ;
+                    if (ped.mesh.position.z > ped.maxZ || ped.mesh.position.z < ped.minZ) {
+                        ped.dirZ *= -1;
+                    }
+                });
+            }
+
+            createSparkEffect(pos) {
+                const flash = document.getElementById('flash-overlay');
+                flash.style.opacity = '0.8';
+                setTimeout(() => { flash.style.opacity = '0'; }, 100);
+
+                const sparkCount = 25;
+                const sparkGeo = new THREE.SphereGeometry(0.08, 8, 8);
+                const sparkMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff });
+
+                for (let i = 0; i < sparkCount; i++) {
+                    const spark = new THREE.Mesh(sparkGeo, sparkMat);
+                    spark.position.set(pos.x, pos.y + 1.8, pos.z);
+                    
+                    const velocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.3,
+                        Math.random() * 0.3 + 0.1,
+                        (Math.random() - 0.5) * 0.3
+                    );
+
+                    this.scene.add(spark);
+                    this.sparks.push({ mesh: spark, vel: velocity, life: 1.0 });
+                }
+            }
+
+            updateSparks() {
+                for (let i = this.sparks.length - 1; i >= 0; i--) {
+                    const s = this.sparks[i];
+                    s.mesh.position.add(s.vel);
+                    s.vel.y -= 0.01;
+                    s.life -= 0.04;
+
+                    if (s.life <= 0) {
+                        this.scene.remove(s.mesh);
+                        this.sparks.splice(i, 1);
+                    }
+                }
+            }
+
+            trySabotage() {
+                this.transformers.forEach(t => {
+                    if (!t.sabotaged && this.player.position.distanceTo(t.position) < 3.0) {
+                        t.sabotaged = true;
+                        
+                        this.createSparkEffect(t.position);
+
+                        t.light.color.setHex(0xe74c3c);
+                        t.light.emissive.setHex(0xe74c3c);
+
+                        this.blackoutCount++;
+                        document.getElementById('message').innerText = `Quartiers plongés dans le noir : ${this.blackoutCount} / 4`;
+
+                        if (this.blackoutCount === 4) {
+                            document.getElementById('message').innerText = "BLACK-OUT TOTAL ! Ville entièrement plongée dans le noir !";
+                            document.getElementById('message').style.color = '#e74c3c';
+                            
+                            this.lamps.forEach(lamp => {
+                                lamp.material.emissive.setHex(0x000000);
+                                lamp.material.color.setHex(0x222222);
+                            });
+                            this.scene.background.setHex(0x020203);
+                            this.ambientLight.intensity = 0.1;
+                        }
+                    }
+                });
+            }
+
+            checkCollision(newPos) {
+                const playerBox = new THREE.Box3(
+                    new THREE.Vector3(newPos.x - this.playerRadius, 0, newPos.z - this.playerRadius),
+                    new THREE.Vector3(newPos.x + this.playerRadius, 2, newPos.z + this.playerRadius)
+                );
+
+                for (let box of this.colliders) {
+                    if (playerBox.intersectsBox(box)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            updatePlayer() {
+                if (!this.player) return;
+
+                const nextPos = this.player.position.clone();
+
+                if (this.keys['arrowup'] || this.keys['z']) {
+                    nextPos.z -= this.playerSpeed;
+                }
+                if (this.keys['arrowdown'] || this.keys['s']) {
+                    nextPos.z += this.playerSpeed;
+                }
+                if (this.keys['arrowleft'] || this.keys['q']) {
+                    nextPos.x -= this.playerSpeed;
+                }
+                if (this.keys['arrowright'] || this.keys['d']) {
+                    nextPos.x += this.playerSpeed;
+                }
+
+                const posXOnly = new THREE.Vector3(nextPos.x, this.player.position.y, this.player.position.z);
+                if (!this.checkCollision(posXOnly)) {
+                    this.player.position.x = nextPos.x;
+                }
+
+                const posZOnly = new THREE.Vector3(this.player.position.x, this.player.position.y, nextPos.z);
+                if (!this.checkCollision(posZOnly)) {
+                    this.player.position.z = nextPos.z;
+                }
+            }
+
+            updateCamera() {
+                if (!this.player) return;
+
+                const targetCameraPosition = new THREE.Vector3(
+                    this.player.position.x,
+                    this.player.position.y + 4,
+                    this.player.position.z + 8
+                );
+
+                this.camera.position.lerp(targetCameraPosition, 0.1);
+                this.camera.lookAt(
+                    this.player.position.x,
+                    this.player.position.y + 1,
+                    this.player.position.z
+                );
+            }
+
+            animate() {
+                window.requestAnimationFrame(this.animate);
+
+                const delta = this.clock.getDelta();
+                this.mixers.forEach(mixer => mixer.update(delta));
+
+                this.updatePlayer();
+                this.updateTraffic();
+                this.updatePedestrians();
+                this.updateSparks();
+                this.updateCamera();
+
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        new GameV2();
+    </script>
+</body>
 </html>
